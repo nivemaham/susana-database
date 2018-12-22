@@ -1,3 +1,4 @@
+import org.apache.spark.sql.functions._
 //
 // [ETL]
 //
@@ -43,11 +44,18 @@ df.show
 // [T]
 // transform
 //
+val trfDF = spark.sql("""
+   select 1 as id, to_json(struct('content_txt', 'hello world')) as t 
+""")
+
 
 //
 // [L]
 // connect to solr
 //
+val options = Map( "collection" -> "gettingstarted", "zkhost" -> "localhost:9983")
+trfDF.write.format("solr").options(options).option("commit_within", "2").mode(org.apache.spark.sql.SaveMode.Overwrite).save
 
+val solrDF = spark.read.format("solr").options(options).load
+solrDF.show
 
-System.exit(0)
