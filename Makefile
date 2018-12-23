@@ -21,6 +21,6 @@ solr-create:
 
 
 spark-load:
-	spark-shell --driver-class-path /opt/lib/postgresql-42.2.5.jar --jars /opt/lib/spark-solr-3.7.0-SNAPSHOT-shaded.jar --master local[20] -i spark/etl.scala 
+	spark-shell --driver-class-path /opt/lib/postgresql-42.2.5.jar  --jars /opt/lib/spark-solr-3.7.0-SNAPSHOT-shaded.jar --master local[20] --driver-memory=5G  --executor-memory=3G  -i spark/etl.scala 
 
 
