@@ -6,7 +6,6 @@ import pysolr
 solr = pysolr.Solr('http://localhost:8983/solr/gettingstarted')
 
 # do a search
-# similar = solr.more_like_this(q='id:1113060', mltfl='concept_name_txt_en')
 results = solr.search('concept_name_txt_en:aids',  **{
     'hl': 'true',
     'fl': 'id',
@@ -85,3 +84,17 @@ for (id, hl) in results.highlighting.items():
 # 'qtime': 3,
 # 'grouped': {},
 # 'nextCursorMark': None}
+
+#
+# see there http://lucene.472066.n3.nabble.com/Using-MoreLikeThisHandler-td532582.html
+# how to config that stuff
+solr = pysolr.Solr('http://localhost:8983/solr/gettingstarted',search_handler='/mlt')
+#similar = solr.more_like_this(q='id:1113060', mltfl='concept_name_txt_en')
+results = solr.search('id:1113060',  **{
+    "mlt.fl":"id,concept_name_txt_en",
+    "mlt.mindf":"1",
+    "mlt.mintf":"1"
+})
+
+print("Saw {0} result(s).".format(len(results.docs)))
+print("Total {0} result(s).".format(results.hits))
