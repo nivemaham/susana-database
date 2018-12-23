@@ -3,15 +3,16 @@ import pysolr
 # create a connection to a solr server
 #zookeeper = pysolr.ZooKeeper("localhost:9983")
 #solr = pysolr.SolrCloud(zookeeper, "gettingstarted")
-solr = pysolr.Solr('http://localhost:8983/solr/gettingstarted')
+solr = pysolr.Solr('http://localhost:8983/solr/omop-concept')
 
 # do a search
-results = solr.search('concept_name_txt_en:aids',  **{
+print("##\n# KEYWORD SEARCH\n##")
+results = solr.search('concept_name:stroke',  **{
     'hl': 'true',
     'fl': 'id',
     'hl.method': 'unified',
     'hl.fragsize': 10,
-    'hl.fl': 'concept_name_txt_en',
+    'hl.fl': 'concept_name',
     'sort': 'score desc',
 })
 
@@ -88,13 +89,17 @@ for (id, hl) in results.highlighting.items():
 #
 # see there http://lucene.472066.n3.nabble.com/Using-MoreLikeThisHandler-td532582.html
 # how to config that stuff
-solr = pysolr.Solr('http://localhost:8983/solr/gettingstarted',search_handler='/mlt')
-#similar = solr.more_like_this(q='id:1113060', mltfl='concept_name_txt_en')
-results = solr.search('id:1113060',  **{
-    "mlt.fl":"id,concept_name_txt_en",
+print("##\n# SIMILAR SEARCH\n##")
+solr = pysolr.Solr('http://localhost:8983/solr/omop-concept',search_handler='/mlt')
+#similar = solr.more_like_this(q='id:1113060', mltfl='concept_name')
+results = solr.search('concept_id:36716999',  **{
+    "mlt.fl":"concept_id,concept_name",
     "mlt.mindf":"1",
     "mlt.mintf":"1"
 })
+
+for result in results.docs:
+    print(f"{result['concept_id']} : {result['concept_name']}")
 
 print("Saw {0} result(s).".format(len(results.docs)))
 print("Total {0} result(s).".format(results.hits))
