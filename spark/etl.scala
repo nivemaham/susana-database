@@ -48,20 +48,22 @@ spark.read.jdbc(url=connectionStr,table="concept_synonym",columnName="concept_id
 //
 
 spark.sql("""
-   SELECT concept_id   as id,
-   concept_name        as concept_name_txt_en,
-   domain_id           as domain_id_t,
-   vocabulary_id       as vocabulary_id_t, 
-   concept_class_id    as concept_class_id_t,
-   standard_concept    as standard_concept_t,
-   concept_code        as concept_code_t
+   SELECT concept_id    
+   ,concept_name        
+   ,domain_id           
+   ,vocabulary_id       
+   ,concept_class_id    
+   ,standard_concept    
+   ,concept_code        
    FROM concept
 """).registerTempTable("cptDF")
 
 spark.sql("""
-   SELECT concept_id                           as id,
-   collect_list(concept_synonym_name) as concept_synonym_name_txt
+   SELECT concept_id                 
+   ,collect_list(concept_synonym_name) as concept_synonym_name
    FROM concept_synonym
+   JOIN concept USING (concept_id)
+   WHERE concept_synonym_name != concept_name
    GROUP BY concept_id
 """).registerTempTable("synDF")
 
@@ -70,14 +72,14 @@ val resultDF = spark.sql("""
   c.*,
   s.* 
   FROM cptDF c
-  LEFT JOIN synDF s USING (id)""")
+  LEFT JOIN synDF s USING (concept_id)""")
 
 //
 // [L]
 // load to solr
 //
 
-val options = Map( "collection" -> "gettingstarted", "zkhost" -> "localhost:9983")
+val options = Map( "collection" -> "omop-concept", "zkhost" -> "localhost:9983")
 resultDF.repartition(32).write.format("solr").options(options).option("commit_within", "20000").option("batch_size", "20000").mode(org.apache.spark.sql.SaveMode.Overwrite).save
 
 System.exit(0)
