@@ -1,5 +1,10 @@
 import pysolr
 
+def ifnull(var, val):
+  if var is None:
+    return val
+  return var
+
 # create a connection to a solr server
 #zookeeper = pysolr.ZooKeeper("localhost:9983")
 #solr = pysolr.SolrCloud(zookeeper, "gettingstarted")
@@ -11,95 +16,49 @@ results = solr.search('concept_name:stroke',  **{
     'hl': 'true',
     'fl': 'id',
     'hl.method': 'unified',
+    'termVectors': 'true',
     'hl.fragsize': 10,
     'hl.fl': 'concept_name',
     'sort': 'score desc',
 })
 
-print("Saw {0} result(s).".format(len(results.docs)))
-print("Total {0} result(s).".format(results.hits))
 
 #first highlight
 for (id, hl) in results.highlighting.items():
     print(f"{id} : {hl}")
 
+print(f"Saw {len(results.docs)} over {results.hits} results")
 
-# {'raw_response': {'responseHeader': {'zkConnected': True,
-# 'status': 0,
-# 'QTime': 3,
-# 'params': {'q': 'concept_name_txt_en:head',
-# 'hl': 'true',
-# 'fl': 'id',
-# 'hl.fragsize': '10',
-# 'hl.method': 'unified',
-# 'hl.fl': 'concept_name_txt_en',
-# 'wt': 'json'}},
-# 'response': {'numFound': 5056,
-# 'start': 0,
-# 'maxScore': 10.457837,
-# 'docs': [{'id': '45877363'},
-# {'id': '40788479'},
-# {'id': '46237573'},
-# {'id': '45673311'},
-# {'id': '4058315'},
-# {'id': '45676271'},
-# {'id': '45639996'},
-# {'id': '4247585'},
-# {'id': '40307966'},
-# {'id': '40438787'}]},
-# 'highlighting': {'45877363': {'concept_name_txt_en': ['<em>Head</em>']},
-# '40788479': {'concept_name_txt_en': ['<em>Head</em>']},
-# '46237573': {'concept_name_txt_en': ['<em>Head</em> falls to side; no attempts to lift <em>head</em>.']},
-# '45673311': {'concept_name_txt_en': ['<em>Head</em> and Shoulders']},
-# '4058315': {'concept_name_txt_en': ['<em>Head</em> lymphangiogram']},
-# '45676271': {'concept_name_txt_en': ['<em>Head</em> and Shoulders']},
-# '45639996': {'concept_name_txt_en': ['<em>Head</em> and Shoulders']},
-# '4247585': {'concept_name_txt_en': ['Domed <em>head</em>']},
-# '40307966': {'concept_name_txt_en': ['<em>Head</em> lymphangiogram']},
-# '40438787': {'concept_name_txt_en': ['CT of <em>head</em>']}}},
-# 'docs': [{'id': '45877363'},
-# {'id': '40788479'},
-# {'id': '46237573'},
-# {'id': '45673311'},
-# {'id': '4058315'},
-# {'id': '45676271'},
-# {'id': '45639996'},
-# {'id': '4247585'},
-# {'id': '40307966'},
-# {'id': '40438787'}],
-# 'hits': 5056,
-# 'debug': {},
-# 'highlighting': {'45877363': {'concept_name_txt_en': ['<em>Head</em>']},
-# '40788479': {'concept_name_txt_en': ['<em>Head</em>']},
-# '46237573': {'concept_name_txt_en': ['<em>Head</em> falls to side; no attempts to lift <em>head</em>.']},
-# '45673311': {'concept_name_txt_en': ['<em>Head</em> and Shoulders']},
-# '4058315': {'concept_name_txt_en': ['<em>Head</em> lymphangiogram']},
-# '45676271': {'concept_name_txt_en': ['<em>Head</em> and Shoulders']},
-# '45639996': {'concept_name_txt_en': ['<em>Head</em> and Shoulders']},
-# '4247585': {'concept_name_txt_en': ['Domed <em>head</em>']},
-# '40307966': {'concept_name_txt_en': ['<em>Head</em> lymphangiogram']},
-# '40438787': {'concept_name_txt_en': ['CT of <em>head</em>']}},
-# 'facets': {},
-# 'spellcheck': {},
-# 'stats': {},
-# 'qtime': 3,
-# 'grouped': {},
-# 'nextCursorMark': None}
 
 #
 # see there http://lucene.472066.n3.nabble.com/Using-MoreLikeThisHandler-td532582.html
 # how to config that stuff
+
 print("##\n# SIMILAR SEARCH\n##")
+# yet possible to:
+# search for standard concepts
+# filter by domain
+# modify boosts on the fly
 solr = pysolr.Solr('http://localhost:8983/solr/omop-concept',search_handler='/mlt')
-#similar = solr.more_like_this(q='id:1113060', mltfl='concept_name')
-results = solr.search('concept_id:36716999',  **{
-    "mlt.fl":"concept_id,concept_name",
+results = solr.search('(concept_id:36210200)',  **{
+    "mlt.fl":"concept_synonym_name,concept_name,vocabulary_id",
     "mlt.mindf":"1",
-    "mlt.mintf":"1"
+    "mlt.mintf":"1",
+    "rows": 15,
+    "mlt.boost": "true",
+    "mlt.interestingTerms": "details",
+    "mlt.qf": "concept_name^1.5 concept_synonym_name^0.5"
 })
 
-for result in results.docs:
-    print(f"{result['concept_id']} : {result['concept_name']}")
+for (key,value) in results.raw_response.items():
+    if key=="interestingTerms":
+        print(f'Weighted query: {value}')
 
-print("Saw {0} result(s).".format(len(results.docs)))
-print("Total {0} result(s).".format(results.hits))
+for result in results.docs:
+    if 'standard_concept' not in result:
+        standard_concept = None
+    else:
+        standard_concept = result['standard_concept']
+    print(f"{result['concept_id']} : {result['concept_name']} ({result['domain_id']} - {standard_concept})")
+
+print(f"Saw {len(results.docs)} over {results.hits} results")
