@@ -30,35 +30,3 @@ for (id, hl) in results.highlighting.items():
 print(f"Saw {len(results.docs)} over {results.hits} results")
 
 
-#
-# see there http://lucene.472066.n3.nabble.com/Using-MoreLikeThisHandler-td532582.html
-# how to config that stuff
-
-print("##\n# SIMILAR SEARCH\n##")
-# yet possible to:
-# search for standard concepts
-# filter by domain
-# modify boosts on the fly
-solr = pysolr.Solr('http://localhost:8983/solr/omop-concept',search_handler='/mlt')
-results = solr.search('(concept_id:36210200)',  **{
-    "mlt.fl":"concept_synonym_name,concept_name,vocabulary_id",
-    "mlt.mindf":"1",
-    "mlt.mintf":"1",
-    "rows": 15,
-    "mlt.boost": "true",
-    "mlt.interestingTerms": "details",
-    "mlt.qf": "concept_name^1.5 concept_synonym_name^0.5"
-})
-
-for (key,value) in results.raw_response.items():
-    if key=="interestingTerms":
-        print(f'Weighted query: {value}')
-
-for result in results.docs:
-    if 'standard_concept' not in result:
-        standard_concept = None
-    else:
-        standard_concept = result['standard_concept']
-    print(f"{result['concept_id']} : {result['concept_name']} ({result['domain_id']} - {standard_concept})")
-
-print(f"Saw {len(results.docs)} over {results.hits} results")
