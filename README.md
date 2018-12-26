@@ -10,3 +10,26 @@ Syncs the OMOP concept with a SolR instance
 3. Spark
     1. install and configure apache Spark
     2. ETL postgres -> SolR
+
+# Linux Configuration
+
+## Ulimit
+
+You will need at least 65000 open files to make spark and solr work fine.
+
+### At runtime
+
+sudo bash
+ulimit -n 8192
+sudo - <yourUser>
+
+
+## With reboot
+
+Edit the  /etc/security/limits.conf file
+Add:
+*         hard    nofile      65000
+*         soft    nofile      65000
+root      hard    nofile      65000
+root      soft    nofile      65000
+
