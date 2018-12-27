@@ -7,7 +7,8 @@ object DbUtil {
   def dbPassword(hostname:String, port:String, database:String, username:String ):String = {
     // Usage: val thatPassWord = dbPassword(hostname,port,database,username)
     // .pgpass file format, hostname:port:database:username:password
-    val passwdFile = new java.io.File(scala.sys.env("HOME"), ".pgpass")
+    //val passwdFile = new java.io.File(scala.sys.env("HOME"), ".pgpass")
+    val passwdFile = new java.io.File( "/home/mapper/.pgpass")
     var passwd = ""
     val fileSrc = scala.io.Source.fromFile(passwdFile)
     fileSrc.getLines.foreach{line =>
@@ -36,9 +37,9 @@ object DbUtil {
 // connect to postgres
 //
 
-val connectionStr = "jdbc:postgresql://localhost:5432/mimic?user=natus&currentSchema=omopvocab"
+val connectionStr = "jdbc:postgresql://localhost:5432/mimic?user=mapper&currentSchema=omopvocab"
 val prop = new java.util.Properties()
-prop.put("password", DbUtil.passwordFromConn("localhost:5432:mimic:natus"))
+prop.put("password", DbUtil.passwordFromConn("localhost:5432:mimic:mapper"))
 spark.read.jdbc(url=connectionStr,table="concept",columnName="concept_id",lowerBound=0,upperBound=4000000,numPartitions=8,connectionProperties=prop).registerTempTable("concept")
 spark.read.jdbc(url=connectionStr,table="concept_synonym",columnName="concept_id",lowerBound=0,upperBound=4000000,numPartitions=8,connectionProperties=prop).registerTempTable("concept_synonym")
 
@@ -46,17 +47,6 @@ spark.read.jdbc(url=connectionStr,table="concept_synonym",columnName="concept_id
 // [T]
 // transform
 //
-
-spark.sql("""
-   SELECT concept_id    
-   ,concept_name        
-   ,domain_id           
-   ,vocabulary_id       
-   ,concept_class_id    
-   ,standard_concept    
-   ,concept_code        
-   FROM concept
-""").registerTempTable("cptDF")
 
 spark.sql("""
    SELECT concept_id                 
@@ -67,12 +57,19 @@ spark.sql("""
    GROUP BY concept_id
 """).registerTempTable("synDF")
 
+
 val resultDF = spark.sql("""
-  SELECT 
-  c.*,
-  s.* 
-  FROM cptDF c
-  LEFT JOIN synDF s USING (concept_id)""")
+   SELECT concept_id    
+   , concept_name        
+   , domain_id           
+   , vocabulary_id       
+   , concept_class_id    
+   , standard_concept    
+   , concept_code        
+   , concept_synonym_name
+   FROM concept
+  LEFT JOIN synDF USING (concept_id)
+""")
 
 //
 // [L]
