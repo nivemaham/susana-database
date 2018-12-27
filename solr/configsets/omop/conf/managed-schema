@@ -123,6 +123,7 @@
     <field name="standard_concept" type="text_general" indexed="true" stored="true" multiValued="false"/>
     <field name="concept_code" type="text_general" indexed="true" stored="true" multiValued="false"/>
     <field name="concept_synonym_name" type="text_en" indexed="true" stored="true" multiValued="true" termVectors="true" storeOffsetsWithPositions="true"/>
+    <field name="concept_mapped_name" type="text_en" indexed="true" stored="true" multiValued="true" termVectors="true" storeOffsetsWithPositions="true"/>
           
        
            
