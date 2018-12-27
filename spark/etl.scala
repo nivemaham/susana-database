@@ -1,7 +1,6 @@
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.Row
-import java.util.Properties
 
 //
 // [ETL]
@@ -35,28 +34,16 @@ object DbUtil {
     dbPassword(connCfg(0),connCfg(1),connCfg(2),connCfg(3))
   }
 
-  def getPgTable(url:String,table:String,partition_column:String,num_partitions:Int,properties:Properties):Dataset[Row]={
-    // Push aggregation to the database
-    val query = f"(SELECT cast(min($partition_column%s) as bigint), cast(max($partition_column%s) + 1 as bigint) FROM $table%s) AS tmp"
-    val row  = (spark.read.jdbc(url=url, table=query, properties=properties).first())
-    val lower_bound = row.getLong(0)
-    val upper_bound = row.getLong(1)
-    
-    //and pass to the main query:
-    spark.read.jdbc( url=url, table=table, columnName=partition_column, lowerBound=lower_bound, upperBound=upper_bound, numPartitions=num_partitions, connectionProperties=properties)
-    }
-
-  def getPgQuery(url:String,query:String,partition_column:String,num_partitions:Int,properties:Properties):Dataset[Row]={
-    // Push aggregation to the database
+  def getPgQuery(url:String,query:String,partition_column:String,num_partitions:Int,password:String):Dataset[Row]={
+    // get min and max for partitioning
     val queryStr = f"($query%s) as tmp"
     val min_max_query = f"(SELECT cast(min($partition_column%s) as bigint), cast(max($partition_column%s) + 1 as bigint) FROM $queryStr%s) AS tmp1"
     print(min_max_query)
-    val row  = (spark.read.jdbc(url=url, table=min_max_query, properties=properties).first())
+    val row  = spark.read.format("jdbc").option("url",url).option("dbtable",min_max_query).option("password",password).load.first
     val lower_bound = row.getLong(0)
     val upper_bound = row.getLong(1)
-    
-    //and pass to the main query:
-    spark.read.jdbc( url=url, table=queryStr, columnName=partition_column, lowerBound=lower_bound, upperBound=upper_bound, numPartitions=num_partitions, connectionProperties=properties)
+    // get the partitionned dataset from multiple jdbc stmts
+    spark.read.format("jdbc").option("url",url).option("dbtable",queryStr).option("partitionColumn",partition_column).option("lowerBound",lower_bound).option("upperBound",upper_bound).option("numPartitions",num_partitions).option("fetchsize",20000).option("password",password).load
     }
 }
 
@@ -66,12 +53,11 @@ object DbUtil {
 //
 
 val url = "jdbc:postgresql://localhost:5432/mimic?user=mapper&currentSchema=omopvocab"
-val prop = new Properties()
-prop.put("password", DbUtil.passwordFromConn("localhost:5432:mimic:mapper"))
+val password = DbUtil.passwordFromConn("localhost:5432:mimic:mapper")
     
-DbUtil.getPgQuery(url, "select concept_id, concept_name, domain_id, vocabulary_id, concept_class_id, standard_concept, concept_code from concept", "concept_id", 8, prop).registerTempTable("concept")
-DbUtil.getPgQuery(url, "select concept_id, concept_synonym_name from concept_synonym", "concept_id", 8, prop).registerTempTable("concept_synonym")
-DbUtil.getPgQuery(url, "select concept_id_1, concept_id_2 from concept_relationship where relationship_id = 'Maps to' and concept_id_1 != concept_id_2", "concept_id_1", 8, prop).registerTempTable("concept_relationship")
+DbUtil.getPgQuery(url, "select concept_id, concept_name, domain_id, vocabulary_id, concept_class_id, standard_concept, concept_code from concept", "concept_id", 8, password).registerTempTable("concept")
+DbUtil.getPgQuery(url, "select concept_id, concept_synonym_name from concept_synonym", "concept_id", 8, password).registerTempTable("concept_synonym")
+DbUtil.getPgQuery(url, "select concept_id_1, concept_id_2 from concept_relationship where relationship_id = 'Maps to' and concept_id_1 != concept_id_2", "concept_id_1", 8, password).registerTempTable("concept_relationship")
 
 
 //
