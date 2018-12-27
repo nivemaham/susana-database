@@ -1,5 +1,5 @@
 OMOP_SCHEMA=omopvocab
-PG_CONF=host=localhost dbname=mimic user=natus
+PG_CONF=host=localhost dbname=mimic user=mapper
 OMOP=$(PG_CONF) options=--search_path=$(OMOP_SCHEMA)
 ATHENA_FOLDER=private/athena
 SOLR_FOLDER=/opt/solr/current
@@ -23,7 +23,7 @@ solr-create:
 	$(SOLR_FOLDER)/bin/solr create -c omop-concept -d solr/configsets/omop -n omop-concept -p 8983
 
 solr-start:
-	$(SOLR_FOLDER)/bin/solr start -e cloud -m 2G -all -noprompt
+	$(SOLR_FOLDER)/bin/solr start -e cloud -m 4G -all -noprompt
 
 solr-stop:
 	$(SOLR_FOLDER)/bin/solr stop -all
