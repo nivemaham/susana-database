@@ -45,6 +45,7 @@ results = solr.search('(Meningeal irritation) AND standard_concept:S',  **{
     'hl.fl': 'concept_name,concept_synonym_name,concept_mapped_name',
     'sow': 'false',
     'rows': 35,
+    'wt': 'python',
 })
 
 
