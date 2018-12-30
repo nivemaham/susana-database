@@ -11,21 +11,29 @@ Syncs the OMOP concept with a SolR instance
     1. install and configure apache Spark
     2. ETL postgres -> SolR
 
-# Linux Configuration
+# Configuration
+
+## Python
+- install the requirements
+- use python3.6+
+
+
+## Spark
+- add the projects jars into `SPARK_HOME`/jars/ (this is a livy limitation)
+
+## Livy
+Livy configuration can be found: `$LIVY_HOME`/conf/livy.conf
 
 ## Ulimit
-
 You will need at least 65000 open files to make spark and solr work fine.
 
 ### At runtime
-
 sudo bash
 ulimit -n 8192
 sudo - <yourUser>
 
 
 ## With reboot
-
 Edit the  /etc/security/limits.conf file
 Add:
 *         hard    nofile      65000
