@@ -9,9 +9,9 @@ def time[R](block: => R): R = {
     result
 }
 
-def getConceptPercent(spark:SparkSession, url:String, password:String, tableStat:String, columnStat:String):Dataset[Row]={
+def getConceptPercent(spark:SparkSession, url:String, tableStat:String, columnStat:String):Dataset[Row]={
   val statQuery = s"select $columnStat as concept_id from $tableStat"
-  val df = PGUtil.inputQueryBulkDf(spark, url, password, statQuery, "/tmp/test", false).registerTempTable("person")
+  val df = PGUtil.inputQueryBulkDf(spark, url, statQuery, "/tmp/test", false).registerTempTable("person")
   val synDF = spark.sql("""
   WITH
   tmp as (
@@ -43,7 +43,6 @@ def getConceptPercent(spark:SparkSession, url:String, password:String, tableStat
 //
 
 val url = "jdbc:postgresql://localhost:5432/mimic?user=mapper&currentSchema=omop"
-val password = PGUtil.passwordFromConn("localhost:5432:mimic:mapper")
 
 val strList = List(
       List("person","gender_concept_id")
@@ -54,8 +53,9 @@ val strList = List(
 );    
  
 for(str <- strList){
-  val statDF = getConceptPercent(spark, url, password, str(0), str(1))
-  PGUtil.outputBulkDfScd1(url, password, "m_concept_stats", "concept_id", statDF, 50000)
+  val statDF = getConceptPercent(spark, url,  str(0), str(1))
+  statDF.show
+  PGUtil.outputBulkDfScd1(url, "m_concept_stats", "concept_id", statDF, 50000)
 }
 
 //PGUtil.outputBulkDfScd2(url, password, "concept_copy", "concept_id", "valid_start_date", "valid_end_date", someDF, 50000)
@@ -67,4 +67,4 @@ for(str <- strList){
 //  PGUtil.bulkInputDataframe(spark, url, password, "select * from drug_exposure", "/tmp/test", false)
 //}
 
-System.exit(0)
+//System.exit(0)
