@@ -2,13 +2,10 @@ from livy import LivySession
 from livy.models import SessionKind
 LIVY_URL = 'http://localhost:8998'
 
-session = LivySession(url=LIVY_URL,kind=SessionKind.SPARK)
+session = LivySession(url=LIVY_URL,kind=SessionKind.SPARK, name="omop sync", jars=["/opt/lib/postgresql-42.2.5.jar"], driver_memory="15G", executor_memory="5G")
 session.start()
-session.run("""import fr.aphp.eds.spark.postgres.PGUtil
-val url = "jdbc:postgresql://localhost:5432/mimic?user=mapper&currentSchema=omop"
-val password = PGUtil.passwordFromConn("localhost:5432:mimic:mapper")
-val conn = PGUtil.connOpen(url, password)
-conn.close()
-1+1""")
+with open('spark/etl-stats.scala', 'r') as myfile:
+    data=myfile.read()
+    session.run(data)
 session.close()
 
