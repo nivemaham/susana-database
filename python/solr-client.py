@@ -19,10 +19,10 @@ results = solr.search('concept_mapped_name:[* TO *]',  **{
 
 
 #first highlight
-for result in results.docs:
-    print(f"{result}")
-
-print(f"Saw {len(results.docs)} over {results.hits} results")
+#for result in results.docs:
+#    print(f"{result}")
+#
+#print(f"Saw {len(results.docs)} over {results.hits} results")
 
 # EDISMAX search
 # handle multiword synonyms
