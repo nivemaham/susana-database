@@ -3,6 +3,8 @@ PG_CONF=host=localhost dbname=mimic user=mapper
 OMOP=$(PG_CONF) options=--search_path=$(OMOP_SCHEMA)
 ATHENA_FOLDER=private/athena
 SOLR_FOLDER=/opt/solr/current
+SPARK_HOME=/opt/spark/current
+LIVY_HOME=/opt/livy/current
 
 
 postgres-create:
@@ -28,9 +30,16 @@ solr-start:
 solr-stop:
 	$(SOLR_FOLDER)/bin/solr stop -all
 
+livy-start:
+	$(LIVY_HOME)/bin/livy-server start
+
+livy-stop:
+	$(LIVY_HOME)/bin/livy-server stop
+
 solr-restart: solr-stop solr-start
+livy-restart: livy-stop livy-start
 
 spark-load:
-	spark-shell --driver-class-path /opt/lib/postgresql-42.2.5.jar  --jars /opt/lib/spark-solr-3.7.0-SNAPSHOT-shaded.jar --master local[20] --driver-memory=5G  --executor-memory=3G  -i spark/etl.scala 
+	spark-shell --driver-class-path /opt/lib/postgresql-42.2.5.jar  --jars /opt/lib/spark-solr-3.7.0-SNAPSHOT-shaded.jar --master local[20] --driver-memory=10G  --executor-memory=2G  -i spark/etl.scala 
 
 
