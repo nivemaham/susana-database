@@ -55,8 +55,4 @@ class SparkLivySession():
     def stop(self):
         self.session.close()
 
-a = SparkLivySession("python/etl-stats.yaml") 
-a.start()
-a.run()
-a.stop()
 
