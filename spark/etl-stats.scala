@@ -52,12 +52,13 @@ val strList = List(
 //   ,List("measurement","measurement_concept_id")
 );    
  
-for(str <- strList){
-  val statDF = getConceptPercent(spark, url,  str(0), str(1))
-  statDF.show
-  PGUtil.outputBulkDfScd1(url, "m_concept_stats", "concept_id", statDF, 50000)
+def runJob():Unit = {
+  for(str <- strList){
+    val statDF = getConceptPercent(spark, url,  str(0), str(1))
+    statDF.show
+    PGUtil.outputBulkDfScd1(url, "m_concept_stats", "concept_id", statDF, 50000)
+  }
 }
-
 //PGUtil.outputBulkDfScd2(url, password, "concept_copy", "concept_id", "valid_start_date", "valid_end_date", someDF, 50000)
   
 //time{
