@@ -1,0 +1,9 @@
+name: omop-stats
+url: http://localhost:8998
+kind: spark
+jars: ["/opt/lib/postgresql-42.2.5.jar"]
+driver_memory: 15G
+executor_memory: 5G
+code:
+      init: spark/etl-stats.scala
+      job: runJob
