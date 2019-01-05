@@ -41,3 +41,15 @@ Add:
 root      hard    nofile      65000
 root      soft    nofile      65000
 
+# Spark Libraries
+The spark library are loaded thought apache livy. They are specified into a
+yaml file and loaded from the pylivy library.
+
+## spark-solr
+Clone the [spark-postgres](https://github.com/parisni/spark-solr)
+Compile it and move the shaded jar into some place.
+
+## spark-postgres
+Clone the [spark-postgres](https://github.com/EDS-APHP/spark-postgres)
+Compile it and move the shaded jar into some place.
+
