@@ -1,7 +1,7 @@
 name: omop-solr
 url: http://localhost:8998
 kind: spark
-jars: ["/opt/lib/postgresql-42.2.5.jar", "/opt/lib/spark-solr-3.7.0-SNAPSHOT-shaded.jar", "/opt/lib/spark-postgres-0.0.1-SNAPSHOT-shaded.jar"]
+jars: ["/opt/lib/postgresql-42.2.5.jar", "/opt/lib/spark-solr-3.7.0-SNAPSHOT-shaded.jar", "/opt/lib/spark-postgres-1.2.0-SNAPSHOT-shaded.jar"]
 driver_memory: 15G
 executor_memory: 5G
 code:

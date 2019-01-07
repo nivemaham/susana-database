@@ -12,9 +12,9 @@ import fr.aphp.eds.spark.postgres.PGUtil
 
 val url = "jdbc:postgresql://localhost:5432/mimic?user=mapper&currentSchema=omopvocab"
     
-PGUtil.inputQueryBulkDf(spark, url, "select concept_id, concept_name, domain_id, vocabulary_id, concept_class_id, standard_concept, concept_code from concept", "/tmp/concept.csv").limit(100).registerTempTable("concept")
-PGUtil.inputQueryBulkDf(spark, url, "select concept_id, concept_synonym_name from concept_synonym", "/tmp/concept_synonym.csv").registerTempTable("concept_synonym")
-PGUtil.inputQueryBulkDf(spark, url, "select concept_id_1, concept_id_2 from concept_relationship where relationship_id = 'Maps to' and concept_id_1 != concept_id_2", "/tmp/concept_relationship.csv").registerTempTable("concept_relationship")
+PGUtil.inputQueryBulkDf(spark, url, "select concept_id, concept_name, domain_id, vocabulary_id, concept_class_id, standard_concept, concept_code from concept", "/tmp/concept.csv", false,  4, "concept_id").registerTempTable("concept")
+PGUtil.inputQueryBulkDf(spark, url, "select concept_id, concept_synonym_name from concept_synonym", "/tmp/concept_synonym.csv", false, 4, "concept_id").registerTempTable("concept_synonym")
+PGUtil.inputQueryBulkDf(spark, url, "select concept_id_1, concept_id_2 from concept_relationship where relationship_id = 'Maps to' and concept_id_1 != concept_id_2", "/tmp/concept_relationship.csv", false, 4, "concept_id_1").registerTempTable("concept_relationship")
 
 
 //
