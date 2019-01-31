@@ -110,7 +110,8 @@
          If you don't need it, consider removing it and the corresponding copyField directive.
     -->
 
-    <field name="concept_id" type="string" indexed="true" stored="true" required="true" multiValued="false" />
+    <field name="id" type="string" indexed="true" stored="true" required="true" multiValued="false" />
+    <field name="concept_id" type="plong" indexed="true" stored="true" required="true" multiValued="false" />
     <!-- docValues are enabled by default for long type so we don't need to index the version field  -->
     <field name="_version_" type="plong" indexed="false" stored="false"/>
     <field name="_root_" type="string" indexed="true" stored="false" docValues="false" />
@@ -124,6 +125,11 @@
     <field name="concept_code" type="text_general" indexed="true" stored="true" multiValued="false"/>
     <field name="concept_synonym_name" type="text_en" indexed="true" stored="true" multiValued="true" termVectors="true" storeOffsetsWithPositions="true"/>
     <field name="concept_mapped_name" type="text_en" indexed="true" stored="true" multiValued="true" termVectors="true" storeOffsetsWithPositions="true"/>
+    <field name="m_frequency_id" type="text_general" indexed="true" stored="true" multiValued="false"/>
+    <field name="m_language_id" type="text_general" indexed="true" stored="true" multiValued="false"/>
+    <field name="is_mapped" type="text_general" indexed="true" stored="true" multiValued="false"/>
+    <field name="local_map_number" type="plong" indexed="true" stored="true" multiValued="false"/>
+    <field name="invalid_reason" type="text_general" indexed="true" stored="true" multiValued="false"/>
           
        
            
@@ -170,7 +176,7 @@
     <!-- Field to use to determine and enforce document uniqueness.
       Unless this field is marked with required="false", it will be a required field
     -->
-    <uniqueKey>concept_id</uniqueKey>
+    <uniqueKey>id</uniqueKey>
 
     <!-- copyField commands copy one field to another at the time a document
        is added to the index.  It's used either to index the same field differently,
