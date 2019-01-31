@@ -19,7 +19,7 @@ Syncs the OMOP concept with a SolR instance
 
 
 ## Spark
-- add the projects jars into `SPARK_HOME`/jars/ (this is a livy limitation)
+- define `$SPARK_HOME` linux env variable
 
 ## Livy
 Livy configuration can be found: `$LIVY_HOME`/conf/livy.conf
