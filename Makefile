@@ -21,11 +21,11 @@ postgres-create:
 solr-create:
 	#sh solr/synonyms/syn-build.sh
 	$(SOLR_FOLDER)/bin/solr delete -c omop-concept
-	$(SOLR_FOLDER)/server/scripts/cloud-scripts/zkcli.sh -cmd clear -z "localhost:9983" /configs/omop-concept
-	$(SOLR_FOLDER)/bin/solr create -c omop-concept -d solr/configsets/omop -n omop-concept -p 8983
+	$(SOLR_FOLDER)/server/scripts/cloud-scripts/zkcli.sh -cmd clear -z "localhost:9983"  /configs/omop-concept
+	$(SOLR_FOLDER)/bin/solr  create -c omop-concept  -d solr/configsets/omop -n omop-concept -p 8983
 
 solr-start:
-	$(SOLR_FOLDER)/bin/solr start -e cloud -m 16G -all #-noprompt
+	JVMFLAGS="-Djute.maxbuffer=50000000" $(SOLR_FOLDER)/bin/solr start -e cloud -m 16G -all #-noprompt
 
 solr-stop:
 	$(SOLR_FOLDER)/bin/solr stop -all
