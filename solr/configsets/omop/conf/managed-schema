@@ -357,8 +357,9 @@
         <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
         <!-- Optionally you may want to use this less aggressive stemmer instead of PorterStemFilterFactory:
         <filter class="solr.EnglishMinimalStemFilterFactory"/>
-	      -->
         <filter class="solr.PorterStemFilterFactory"/>
+	      -->
+  	<filter class="solr.KStemFilterFactory"/>
       </analyzer>
       <analyzer type="query">
         <tokenizer class="solr.StandardTokenizerFactory"/>
@@ -372,8 +373,9 @@
         <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
         <!-- Optionally you may want to use this less aggressive stemmer instead of PorterStemFilterFactory:
         <filter class="solr.EnglishMinimalStemFilterFactory"/>
-	      -->
         <filter class="solr.PorterStemFilterFactory"/>
+	      -->
+  	<filter class="solr.KStemFilterFactory"/>
       </analyzer>
     </fieldType>
 
