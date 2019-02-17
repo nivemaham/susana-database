@@ -19,13 +19,14 @@ postgres-create:
 
 
 solr-create:
-	#sh solr/synonyms/syn-build.sh
-	$(SOLR_FOLDER)/bin/solr delete -c omop-concept
-	$(SOLR_FOLDER)/server/scripts/cloud-scripts/zkcli.sh -cmd clear -z "localhost:9983"  /configs/omop-concept
-	$(SOLR_FOLDER)/bin/solr  create -c omop-concept  -d solr/configsets/omop -n omop-concept -p 8983
+	sh solr/synonyms/syn-build.sh
+	#$(SOLR_FOLDER)/bin/solr delete -c omop-concept -deleteConfig true
+	$(SOLR_FOLDER)/server/scripts/cloud-scripts/zkcli.sh -cmd clear -z "localhost:9983"  /configs/omop-concept-conf
+	$(SOLR_FOLDER)/server/scripts/cloud-scripts/zkcli.sh -cmd upconfig  -confdir solr/configsets/omop/conf/  -confname omop-concept-conf -z "localhost:9983"
+	$(SOLR_FOLDER)/bin/solr create -c omop-concept -n omop-concept-conf -p 8983 -V
 
 solr-start:
-	JVMFLAGS="-Djute.maxbuffer=50000000" $(SOLR_FOLDER)/bin/solr start -e cloud -m 16G -all #-noprompt
+	$(SOLR_FOLDER)/bin/solr start -e cloud -m 16G -all #-noprompt
 
 solr-stop:
 	$(SOLR_FOLDER)/bin/solr stop -all
@@ -40,10 +41,16 @@ solr-restart: solr-stop solr-start
 livy-restart: livy-stop livy-start
 
 solr-load:
-	$(SPARK_HOME)/bin/spark-shell --driver-class-path /opt/lib/postgresql-42.2.5.jar  --jars "/opt/lib/spark-solr-3.7.0-SNAPSHOT-shaded.jar,/opt/lib/spark-postgres-2.3.0-SNAPSHOT-shaded.jar" --master local[20] --driver-memory=10G  --executor-memory=2G  -i spark/etl-solr.scala 
+	$(SPARK_HOME)/bin/spark-shell --driver-class-path /opt/lib/postgresql-42.2.5.jar  --jars "/opt/lib/spark-solr-3.7.0-SNAPSHOT-shaded.jar,/opt/lib/spark-postgres-2.4.0-SNAPSHOT-shaded.jar" --master local[20] --driver-memory=10G  --executor-memory=2G  -i spark/etl-solr-full.scala 
+
+stats-load:
+	$(SPARK_HOME)/bin/spark-shell --driver-class-path /opt/lib/postgresql-42.2.5.jar  --jars "/opt/lib/spark-solr-3.7.0-SNAPSHOT-shaded.jar,/opt/lib/spark-postgres-2.4.0-SNAPSHOT-shaded.jar" --master local[20] --driver-memory=10G  --executor-memory=4G  -i spark/etl-stats.scala
 
 spark-shell:
-	$(SPARK_HOME)/bin/spark-shell --driver-class-path /opt/lib/postgresql-42.2.5.jar  --jars "/opt/lib/spark-solr-3.7.0-SNAPSHOT-shaded.jar,/opt/lib/spark-postgres-2.3.0-SNAPSHOT-shaded.jar" --master local[20] --driver-memory=10G  --executor-memory=2G 
+	$(SPARK_HOME)/bin/spark-shell --driver-class-path /opt/lib/postgresql-42.2.5.jar  --jars "/opt/lib/spark-solr-3.7.0-SNAPSHOT-shaded.jar,/opt/lib/spark-postgres-2.4.0-SNAPSHOT-shaded.jar" --master local[20] --driver-memory=10G  --executor-memory=2G 
 
 spark-translate:
-	PYTHONSTARTUP=spark/etl-translate.py pyspark --driver-class-path /opt/lib/postgresql-42.2.5.jar  --jars "/opt/lib/postgresql-42.2.5.jar,/opt/lib/spark-postgres-2.3.0-SNAPSHOT-shaded.jar"  --master local[20]
+	PYTHONSTARTUP=spark/etl-translate.py pyspark --driver-class-path /opt/lib/postgresql-42.2.5.jar  --jars "/opt/lib/postgresql-42.2.5.jar,/opt/lib/spark-postgres-2.4.0-SNAPSHOT-shaded.jar"  --master local[20]
+
+spark-cim10:
+	PYTHONSTARTUP="spark/etl-cim10.py" pyspark --driver-class-path /opt/lib/postgresql-42.2.5.jar  --jars "/opt/lib/postgresql-42.2.5.jar,/opt/lib/spark-postgres-2.4.0-SNAPSHOT-shaded.jar"  --master local[20]
