@@ -17,6 +17,10 @@ Syncs the OMOP concept with a SolR instance
 - install the requirements
 - use python3.6+
 
+## Solr
+In order to make zookeeper able to ingest large configurations such synonyms
+- add SOLR_OPTS="$SOLR_OPTS -Djute.maxbuffer=0x9fffff" to the '$SOLR_HOME/bin/solr.in.sh'
+
 
 ## Spark
 - define `$SPARK_HOME` linux env variable
