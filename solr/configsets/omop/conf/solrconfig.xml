@@ -87,6 +87,8 @@
        specific jar file.  This will cause a serious error to be logged
        if it can't be loaded.
     -->
+  <lib dir="${user.dir}/../contrib/analysis-extras/lucene-libs/" />
+  <lib dir="${user.dir}/../contrib/analysis-extras/lib/" />
   <!--
      <lib path="../a-jar-that-does-not-exist.jar" />
   -->
