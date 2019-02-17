@@ -54,5 +54,3 @@ class SparkLivySession():
 
     def stop(self):
         self.session.close()
-
-

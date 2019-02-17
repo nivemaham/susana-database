@@ -6,7 +6,7 @@ import pysolr
 collection="omop-concept"
 pysolr.ZooKeeper.CLUSTER_STATE = f'/collections/{collection}/state.json'
 zookeeper = pysolr.ZooKeeper("localhost:9983")
-solrCloud = pysolr.SolrCloud(zookeeper,collection, results_cls=dict)
+solrCloud = pysolr.SolrCloud(zookeeper, collection, results_cls=dict)
 
 
 # EDISMAX search
@@ -14,7 +14,7 @@ solrCloud = pysolr.SolrCloud(zookeeper,collection, results_cls=dict)
 # handle field query
 # handle boosting
 print("##\n# KEYWORD SEARCH\n##")
-results = solrCloud.search('(Meningeal irritation) AND standard_concept:S',  **{
+results = solrCloud.search('(child) AND standard_concept:S',  **{
     'defType': 'edismax',
     'fl': '*',
     'qf': 'concept_synonym_name^1 concept_name^2 concept_mapped_name^1',
@@ -29,13 +29,14 @@ results = solrCloud.search('(Meningeal irritation) AND standard_concept:S',  **{
     'hl.requireFieldMatch': 'true',
     'hl.fl': 'concept_name,concept_synonym_name,concept_mapped_name',
     'sow': 'false',
-    'rows': 15,
+    'rows': 2,
     'wt': 'python',
     'facet': 'true',
     'facet.field': ['domain_id','standard_concept'],
     'facet.limit': 5,
 })
 
+print(results)
 
 for result in results["response"]["docs"]:
     print(f"{result['concept_id']} | {result['domain_id']} | {results['highlighting'].get(result['concept_id'])['concept_name'][0]}" )
