@@ -15,6 +15,7 @@ Syncs the OMOP concept with a SolR instance
 
 ## Python
 - install the requirements
+- install pyLivy from [pyLivy](https://github.com/EDS-APHP/pylivy)
 - use python3.6+
 
 ## Solr
