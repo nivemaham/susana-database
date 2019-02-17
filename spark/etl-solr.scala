@@ -1,5 +1,40 @@
 import fr.aphp.eds.spark.postgres.PGUtil
-
+// PRINCIPLE
+// For concept and each language the fields are present:
+// - concept_name: the concept_name in it's original langage
+// - concept_synonym_name_lg: the concept_synonym's list including the concept_name
+// - concept_mapped_name_lg: the mapped_concept_synonyms mapped list
+// - concept_hierarchy_name_lg: the hierarchy list labels
+// Therefore,
+// when an english label maps to an other english label 
+//  we can direct all the _en labels to all _en fields
+//  we can direct all the _en labels to all _en_lg fields
+// we can also translate it to all language
+//  we can then direct all the _lg labels to all _lg fields
+// Identically,
+// when a french label maps to an other english label 
+//  we can direct all the _fr labels to all _fr fields
+//  we can direct all the _fr labels to all _fr_lg fields
+// we can also translate it to all language
+//  we can then direct all the _lg labels to all _lg fields
+// BASICALY
+// each call triggers 3 searches:
+// 1. intra language search
+// 2. translated search
+// 3. bi-lingual search
+// TECHNICALY
+// This results in [fr->en]:
+// 1.  f.fr.qf=concept_name_fr concept_synonym_name_fr concept_mapped_name_fr concept_hierarchy_name_fr
+// 2. &f.tr_en.qf=concept_name_en concept_synonym_name_en concept_mapped_name_en concept_hierarchy_name_en
+// 3. &f.fr_en.qf=concept_name_fr_en concept_synonym_name_fr_en concept_mapped_name_fr_en concept_hierarchy_name_fr_en
+// query: fr:(bonjour monde) tr_en:(hello world) fr_en:(bonjour monde)
+//
+// This results in [fr->fr]:
+// 1.  f.fr.qf=concept_name_fr concept_synonym_name_fr concept_mapped_name_fr concept_hierarchy_name_fr
+// 2. &f.tr_en.qf=concept_name_en concept_synonym_name_en concept_mapped_name_en concept_hierarchy_name_en
+// 3. &f.fr_en.qf=concept_name_fr_en concept_synonym_name_fr_en concept_mapped_name_fr_en concept_hierarchy_name_fr_en
+// query: fr:(bonjour monde) tr_en:(hello world) fr_en:(bonjour monde)
+//
 //
 // [ETL]
 //
@@ -12,12 +47,25 @@ import fr.aphp.eds.spark.postgres.PGUtil
 
 val url = "jdbc:postgresql://localhost:5432/mimic?user=mapper&currentSchema=map"
     
+// WHEN NONE -> FULL
+// WHEN x -> one maj
 
-val pg = PGUtil(spark, url, "/tmp/spark-postgres-tmp2" )
-pg.inputBulk(query="select concept_id, concept_name, domain_id, vocabulary_id, concept_class_id, standard_concept, concept_code, m_language_id, m_frequency_id, invalid_reason from concept",  numPartitions=4, partitionColumn="concept_id").registerTempTable("concept")
-pg.inputBulk(query="select concept_id, concept_synonym_name from concept_synonym",  numPartitions=4, partitionColumn="concept_id").registerTempTable("concept_synonym")
-pg.inputBulk(query="select concept_id_1, concept_id_2, relationship_id from concept_relationship where concept_id_1 != concept_id_2",  numPartitions=4, partitionColumn="concept_id_1").registerTempTable("concept_relationship")
+def runJob(concept_id:String="-1"):Unit = {
 
+val pg = PGUtil(spark, url, "/tmp/spark-postgres-tmp" )
+
+val concept_filter = if(concept_id == "-1") "TRUE" else f" $concept_id = concept_id"
+if (concept_id == "-1"){// full
+pg.inputBulk(query=f"select concept_id, concept_name, domain_id, vocabulary_id, concept_class_id, standard_concept, concept_code, m_language_id, m_frequency_id, invalid_reason from concept",  numPartitions=4, partitionColumn="concept_id").registerTempTable("concept")
+pg.inputBulk(query=f"select concept_id, concept_synonym_name from concept_synonym",  numPartitions=4, partitionColumn="concept_id").registerTempTable("concept_synonym")
+pg.inputBulk(query=f"select concept_id_1, concept_id_2, relationship_id from concept_relationship where concept_id_1 != concept_id_2 AND m_modif_end_datetime IS NULL",  numPartitions=4, partitionColumn="concept_id_1").registerTempTable("concept_relationship")
+}else {
+
+pg.input(query=f"select concept_id, concept_name, domain_id, vocabulary_id, concept_class_id, standard_concept, concept_code, m_language_id, m_frequency_id, invalid_reason from concept where concept_id IN ( $concept_id )").registerTempTable("concept")
+pg.input(query=f"select concept_id, concept_synonym_name from concept_synonym where concept_id IN ($concept_id)").registerTempTable("concept_synonym")
+pg.input(query=f"select concept_id_1, concept_id_2, relationship_id from concept_relationship where concept_id_1 != concept_id_2 AND m_modif_end_datetime IS NULL AND invalid_reason IS DISTINCT FROM 'D' AND concept_id_1 IN ( $concept_id )").registerTempTable("concept_relationship")
+
+}
 
 //
 // [T]
@@ -47,6 +95,7 @@ spark.sql("""
    GROUP BY cr.concept_id_1
 """).registerTempTable("mappedDF")
 
+// concepts already mapped to local concepts
 spark.sql("""
   SELECT concept_id_2 as concept_id
   , count(1) as local_map_number
@@ -89,6 +138,8 @@ val resultDF = spark.sql("""
 
 
 val options = Map( "collection" -> "omop-concept", "zkhost" -> "localhost:9983")
-resultDF.repartition(32).write.format("solr").options(options).option("commit_within", "20000").option("batch_size", "20000").mode(org.apache.spark.sql.SaveMode.Overwrite).save
-
-def runJob(){}
+if(concept_id == "-1")
+  resultDF.repartition(32).write.format("solr").options(options).option("commit_within", "20000").option("batch_size", "20000").mode(org.apache.spark.sql.SaveMode.Overwrite).save
+else
+  resultDF.write.format("solr").options(options).option("commit_within", "2").option("batch_size", "20000").mode(org.apache.spark.sql.SaveMode.Overwrite).save
+}
