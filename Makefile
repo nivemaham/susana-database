@@ -17,10 +17,13 @@ postgres-create:
 	psql "$(OMOP)" -f "omop/build/OMOP CDM postgresql constraints.txt"
 	psql "$(OMOP)" -f "omop/build/OMOP CDM postgresql pk indexes.txt"
 
+solr-reset: solr-delete solr-stop solr-start solr-create
+
+solr-delete:
+	$(SOLR_FOLDER)/bin/solr delete -c omop-concept -deleteConfig true
 
 solr-create:
 	sh solr/synonyms/syn-build.sh
-	#$(SOLR_FOLDER)/bin/solr delete -c omop-concept -deleteConfig true
 	$(SOLR_FOLDER)/server/scripts/cloud-scripts/zkcli.sh -cmd clear -z "localhost:9983"  /configs/omop-concept-conf
 	$(SOLR_FOLDER)/server/scripts/cloud-scripts/zkcli.sh -cmd upconfig  -confdir solr/configsets/omop/conf/  -confname omop-concept-conf -z "localhost:9983"
 	$(SOLR_FOLDER)/bin/solr create -c omop-concept -n omop-concept-conf -p 8983 -V
