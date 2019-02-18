@@ -47,7 +47,7 @@ import fr.aphp.eds.spark.postgres.PGUtil
 
 val url = "jdbc:postgresql://localhost:5432/mimic?user=mapper&currentSchema=map"
 
-val equivalent = " 'maps to','is a' "
+val equivalent = " 'maps to','is a', 'mapped from'"
     
 // WHEN NONE -> FULL
 // WHEN x -> one maj
