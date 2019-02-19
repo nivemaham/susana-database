@@ -64,11 +64,11 @@ def solr_algo_simple():
 def solr_query_multi(en=None, fr=None, fr_en=None):
     res = []
     if en:
-        res.append(str(FilterColumnEnum("en",en)))
+        res.append(str(FilterColumnEnum("en",[en])))
     if fr:
-        res.append(str(FilterColumnEnum("fr",fr)))
+        res.append(str(FilterColumnEnum("fr",[fr])))
     if fr_en:
-        res.append(str(FilterColumnEnum("fr_en",fr_en)))
+        res.append(str(FilterColumnEnum("fr_en",[fr_en])))
     return [" OR ".join(res)]
 
 
@@ -77,7 +77,7 @@ def test_conn():
     solr_query = SolrQuery("localhost:9983", "omop-concept")\
         .set_type_edismax()\
         .select(["id","value_avg","concept_name","score"])\
-        .query(solr_query_multi(fr="maladie",en="dicease",fr_en="maladie"))\
+        .query(solr_query_multi(fr="yellow",en="yellow",fr_en="yellow"))\
         .algo(solr_algo_simple())\
         .highlight(["concept_name"])\
         .facet(10, ["standard_concept", "is_mapped"])\
