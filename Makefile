@@ -46,7 +46,7 @@ livy-restart: livy-stop livy-start
 solr-load:
 	$(SPARK_HOME)/bin/spark-shell --driver-class-path /opt/lib/postgresql-42.2.5.jar  --jars "/opt/lib/spark-solr-3.7.0-SNAPSHOT-shaded.jar,/opt/lib/spark-postgres-2.4.0-SNAPSHOT-shaded.jar" --master local[20] --driver-memory=10G  --executor-memory=2G  -i spark/etl-solr-full.scala 
 
-stats-load:
+spark-stats:
 	$(SPARK_HOME)/bin/spark-shell --driver-class-path /opt/lib/postgresql-42.2.5.jar  --jars "/opt/lib/spark-solr-3.7.0-SNAPSHOT-shaded.jar,/opt/lib/spark-postgres-2.4.0-SNAPSHOT-shaded.jar" --master local[20] --driver-memory=10G  --executor-memory=4G  -i spark/etl-stats.scala
 
 spark-shell:
