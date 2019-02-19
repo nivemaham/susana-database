@@ -47,12 +47,13 @@ import fr.aphp.eds.spark.postgres.PGUtil
 
 val url = "jdbc:postgresql://localhost:5432/mimic?user=mapper&currentSchema=map"
 
-val equivalent = " 'maps to','is a', 'mapped from'"
     
 // WHEN NONE -> FULL
 // WHEN x -> one maj
 
 val pg = PGUtil(spark, url, "/home/natus/spark-postgres-tmp" )
+
+val equivalent = " 'maps to','is a', 'mapped from' "
 
 pg.inputBulk(query=f"""
   select concept_id
@@ -64,6 +65,7 @@ pg.inputBulk(query=f"""
   , concept_code
   , m_language_id
   , m_frequency_value
+  , m_value_avg
   , invalid_reason 
   from concept
   """,  numPartitions=4, partitionColumn="concept_id").registerTempTable("concept")
@@ -86,40 +88,11 @@ pg.inputBulk(query=f"""
   AND m_modif_end_datetime IS NULL
   """,  numPartitions=4, partitionColumn="concept_id_1").registerTempTable("concept_relationship")
 
-pg.inputBulk(query=f"""
-  select 
-  measurement_concept_id as concept_id
-  , value_as_number 
-  from omop.measurement 
-  where measurement_concept_id !=0
-  """,  numPartitions=4, partitionColumn="concept_id").registerTempTable("measurement")
-
-pg.inputBulk(query=f"""
-  select 
-    observation_concept_id as concept_id
-  , value_as_number
-  , case when value_as_string is not null then 1 else 0 end as value_is_text 
-  from omop.observation 
-  where observation_concept_id !=0
-  """,  numPartitions=4, partitionColumn="concept_id").registerTempTable("observation")
 
 //
 // [T]
 // transform
 //
-spark.sql("""
-  select   concept_id
-         , avg(value_as_number) as value_avg
-         from measurement
-         group by concept_id
-""").registerTempTable("measDF")
-
-spark.sql("""
-  select   concept_id
-         , avg(value_as_number) as value_avg
-         from observation
-         group by concept_id
-""").registerTempTable("obsDF")
 
 spark.sql("""
   select   concept_id
@@ -218,8 +191,8 @@ val resultDF = spark.sql("""
      ELSE 'EMPTY'
      END as is_mapped
    , COALESCE(local_map_number, 0) as local_map_number
-   , COALESCE(measDF.value_avg,obsDF.value_avg) as value_avg
-   , COALESCE(measDF.value_avg,obsDF.value_avg) is not null value_is_numeric
+   , m_value_avg as value_avg
+   , m_value_avg is not null value_is_numeric
    , value_is_text = 1  as value_is_text
    FROM concept
    LEFT JOIN mappeddf USING (concept_id)
@@ -228,9 +201,7 @@ val resultDF = spark.sql("""
    LEFT JOIN dfmapen USING (concept_id)
    LEFT JOIN dfmapfr USING (concept_id)
    LEFT JOIN localMapDF USING (concept_id)
-   LEFT JOIN measDF USING (concept_id)
    LEFT JOIN obsTextDF USING (concept_id)
-   LEFT JOIN obsDF USING (concept_id)
 """)
 
 //
