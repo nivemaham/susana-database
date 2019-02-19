@@ -70,7 +70,56 @@ val result = sql(queryUnion)
 
 pg.sqlExec("create table concept_tmp (concept_id integer not null, m_frequency_value smallint)")
 pg.outputBulk("concept_tmp", result, 2)
-pg.sqlExec("UPDATE concept set m_frequency_value = concept_tmp.m_frequency_value from concept_tmp where concept.concept_id = concept_tmp.concept_id")
+pg.sqlExec("""
+  UPDATE concept set m_frequency_value = concept_tmp.m_frequency_value 
+  from concept_tmp 
+  where concept.concept_id = concept_tmp.concept_id
+  AND concept.m_frequency_value != concept_tmp.m_frequency_value
+  """)
+pg.tableDrop("concept_tmp")
+
+// VALUES_AVG !!
+pg.inputBulk(query=f"""
+  select 
+  measurement_concept_id as concept_id
+  , value_as_number 
+  from omop.measurement 
+  where measurement_concept_id !=0
+  """,  numPartitions=4, partitionColumn="concept_id").registerTempTable("measurement")
+
+pg.inputBulk(query=f"""
+  select 
+    observation_concept_id as concept_id
+  , value_as_number
+  , case when value_as_string is not null then 1 else 0 end as value_is_text 
+  from omop.observation 
+  where observation_concept_id !=0
+  """,  numPartitions=4, partitionColumn="concept_id").registerTempTable("observation")
+
+spark.sql("""
+  select   concept_id
+         , avg(value_as_number) as m_value_avg
+         from measurement
+         group by concept_id
+""").registerTempTable("measDF")
+
+spark.sql("""
+  select   concept_id
+         , avg(value_as_number) as m_value_avg
+         from observation
+         group by concept_id
+""").registerTempTable("obsDF")
+
+val avgResult = sql("select * from measdf union select * from obsdf")
+
+pg.sqlExec("create table concept_tmp (concept_id integer not null, m_value_avg float)")
+pg.outputBulk("concept_tmp", avgResult, 2)
+pg.sqlExec("""
+  UPDATE concept set m_value_avg = concept_tmp.m_value_avg 
+  FROM concept_tmp 
+  WHERE concept.concept_id = concept_tmp.concept_id 
+  AND concept.m_value_avg != concept_tmp.m_value_avg
+  """)
 pg.tableDrop("concept_tmp")
 
 System.exit(0)
