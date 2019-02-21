@@ -30,7 +30,7 @@ def getConceptPercent(pg:PGUtil, spark:SparkSession, url:String, tableStat:Strin
   from tmp)
   SELECT
     concept_id
-  , CASE WHEN ct > p1 THEN 1 WHEN ct > p2 THEN 2 WHEN ct > p3 THEN 3 ELSE 4 END as m_frequency_value
+  , CASE WHEN ct > p1 THEN 4 WHEN ct > p2 THEN 3 WHEN ct > p3 THEN 2 ELSE 1 END as m_frequency_value
   from tmp
   cross join total
   """
@@ -68,14 +68,27 @@ for(str <- strList){
 val queryUnion = query.mkString(" UNION ")
 val result = sql(queryUnion)
 
+pg.tableDrop("concept_tmp")
 pg.sqlExec("create table concept_tmp (concept_id integer not null, m_frequency_value smallint)")
 pg.outputBulk("concept_tmp", result, 2)
+
 pg.sqlExec("""
-  UPDATE concept set m_frequency_value = concept_tmp.m_frequency_value 
-  from concept_tmp 
-  where concept.concept_id = concept_tmp.concept_id
-  AND concept.m_frequency_value != concept_tmp.m_frequency_value
+  UPDATE mapper_statistic 
+  set m_value_as_number = concept_tmp.m_frequency_value, m_algo_id = 4, m_user_id = 10, m_valid_start_date=now()
+  FROM concept_tmp 
+  WHERE mapper_statistic.m_concept_id = concept_tmp.concept_id 
+  AND m_statistic_type_id = 'FREQ'
   """)
+
+pg.sqlExec("""
+  INSERT INTO mapper_statistic 
+  (m_concept_id, m_statistic_type_id, m_value_as_number, m_algo_id, m_user_id, m_valid_start_date)
+  SELECT concept_id, 'AVG', m_frequency_value, 4, 10, now()
+  FROM concept_tmp
+  LEFT JOIN mapper_statistic ON concept_tmp.concept_id = mapper_statistic.m_concept_id
+  WHERE mapper_statistic.m_concept_id IS NULL
+  """)
+
 pg.tableDrop("concept_tmp")
 
 // VALUES_AVG !!
@@ -113,13 +126,26 @@ spark.sql("""
 val avgResult = sql("select * from measdf union select * from obsdf")
 
 pg.sqlExec("create table concept_tmp (concept_id integer not null, m_value_avg float)")
+
 pg.outputBulk("concept_tmp", avgResult, 2)
+
 pg.sqlExec("""
-  UPDATE concept set m_value_avg = concept_tmp.m_value_avg 
+  UPDATE mapper_statistic 
+  set m_value_as_number = concept_tmp.m_value_avg, m_algo_id = 4, m_user_id = 10, m_valid_start_date=now()
   FROM concept_tmp 
-  WHERE concept.concept_id = concept_tmp.concept_id 
-  AND concept.m_value_avg != concept_tmp.m_value_avg
+  WHERE mapper_statistic.m_concept_id = concept_tmp.concept_id 
+  AND m_statistic_type_id = 'AVG'
   """)
+
+pg.sqlExec("""
+  INSERT INTO mapper_statistic 
+  (m_concept_id, m_statistic_type_id, m_value_as_number, m_algo_id, m_user_id, m_valid_start_date)
+  SELECT concept_id, 'AVG', m_value_avg, 4, 10, now()
+  FROM concept_tmp
+  LEFT JOIN mapper_statistic ON concept_tmp.concept_id = mapper_statistic.m_concept_id
+  WHERE mapper_statistic.m_concept_id IS NULL
+  """)
+
 pg.tableDrop("concept_tmp")
 
 System.exit(0)
