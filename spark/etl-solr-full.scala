@@ -64,11 +64,23 @@ pg.inputBulk(query=f"""
   , standard_concept
   , concept_code
   , m_language_id
-  , m_frequency_value
-  , m_value_avg
   , invalid_reason 
   from concept
   """,  numPartitions=4, partitionColumn="concept_id").registerTempTable("concept")
+
+pg.inputBulk(query=f"""
+  select m_concept_id as concept_id
+  , m_value_as_number as m_value_avg
+  from mapper_statistic
+  where m_statistic_type_id = 'AVG'
+  """,  numPartitions=4, partitionColumn="concept_id").registerTempTable("stats_avg")
+
+pg.inputBulk(query=f"""
+  select m_concept_id as concept_id
+  , m_value_as_number as m_frequency_value
+  from mapper_statistic
+  where m_statistic_type_id = 'FREQ'
+  """,  numPartitions=4, partitionColumn="concept_id").registerTempTable("stats_freq")
 
 pg.inputBulk(query=f"""
   select 
@@ -94,12 +106,6 @@ pg.inputBulk(query=f"""
 // transform
 //
 
-spark.sql("""
-  select   concept_id
-           , max(value_is_text) as value_is_text
-         from observation
-         group by concept_id
-""").registerTempTable("obsTextDF")
 
 spark.sql("""
    SELECT concept_id                 
@@ -193,7 +199,6 @@ val resultDF = spark.sql("""
    , COALESCE(local_map_number, 0) as local_map_number
    , m_value_avg as value_avg
    , m_value_avg is not null value_is_numeric
-   , value_is_text = 1  as value_is_text
    FROM concept
    LEFT JOIN mappeddf USING (concept_id)
    LEFT JOIN dfsynen USING (concept_id)
@@ -201,7 +206,8 @@ val resultDF = spark.sql("""
    LEFT JOIN dfmapen USING (concept_id)
    LEFT JOIN dfmapfr USING (concept_id)
    LEFT JOIN localMapDF USING (concept_id)
-   LEFT JOIN obsTextDF USING (concept_id)
+   LEFT JOIN stats_avg USING (concept_id)
+   LEFT JOIN stats_freq USING (concept_id)
 """)
 
 //
