@@ -64,7 +64,27 @@ def loadConceptCsv(pg:PGUtil, csvPath:String, m_project_type_id:String, m_langua
     )
     """)
 
+  pg.sqlExec(f"""
+    WITH 
+    del as (
+      delete
+      from concept 
+      where vocabulary_id = '$vocabulary_id' 
+      AND domain_id = '$domain_id'
+      AND m_project_id IN (select m_project_id from mapper_project where lower(m_project_type_id) = lower('$m_project_type_id'))
+      returning concept_id
+    ),
+    del2 AS (
+      delete from mapper_statistic where m_concept_id in (select concept_id from del)
+    ),
+    del3 AS (
+      delete from concept_synonym where concept_id in (select concept_id from del)
+    )
+    delete from concept_relationship where concept_id_1 in (select concept_id from del) OR concept_id_2 in (select concept_id from del)
+    """)
+
   pg.outputBulk("concept_tmp", concept_tmp, 2)
+
   pg.sqlExec("""
     WITH 
     ins as (
@@ -82,23 +102,6 @@ def loadConceptCsv(pg:PGUtil, csvPath:String, m_project_type_id:String, m_langua
       JOIN concept_tmp USING (concept_name)
     """)
 
-  pg.sqlExec(f"""
-    WITH 
-    del as (
-      delete
-      from concept 
-      where vocabulary_id = '$vocabulary_id' 
-      AND m_project_id IN (select m_project_id from mapper_project where m_project_type_id = '$m_project_type_id')
-      returning concept_id
-    ),
-    del2 AS (
-      delete from mapper_statistic where m_concept_id in (select concept_id from del)
-    ),
-    del3 AS (
-      delete from concept_synonym where concept_id in (select concept_id from del)
-    )
-    delete from concept_relationship where concept_id_1 in (select concept_id from del) OR concept_id_2 in (select concept_id from del)
-    """)
 
   pg.tableDrop("concept_tmp")
 
