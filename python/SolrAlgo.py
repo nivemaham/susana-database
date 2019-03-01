@@ -77,7 +77,7 @@ def test_conn():
     solr_query = SolrQuery("localhost:9983", "omop-concept")\
         .set_type_edismax()\
         .select(["id","value_avg","concept_name","score"])\
-        .query(solr_query_multi(fr="yellow",en="yellow",fr_en="yellow"))\
+        .query(solr_query_multi(fr="mucolipidosis ii [cell-embedded disease] [i.cell disease]",en="mucolipidosis ii [cell-embedded disease] [i.cell disease]",fr_en="mucolipidosis ii [cell-embedded disease] [i.cell disease]"))\
         .algo(solr_algo_simple())\
         .highlight(["concept_name"])\
         .facet(10, ["standard_concept", "is_mapped"])\

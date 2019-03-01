@@ -62,10 +62,29 @@ var concept_query = f"""
   , standard_concept
   , concept_code
   , m_language_id
-  , m_frequency_value
-  , m_value_avg
   , invalid_reason 
+  , m_project_id 
   from concept
+  """
+
+var project_query = f"""
+  select m_project_id
+  , m_project_type_id
+  from mapper_project
+  """
+
+var avg_query = f"""
+  select m_concept_id as concept_id
+  , m_value_as_number as m_value_avg
+  from mapper_statistic
+  where m_statistic_type_id = 'AVG'
+  """
+
+var freq_query = f"""
+  select m_concept_id as concept_id
+  , m_value_as_number as m_frequency_value
+  from mapper_statistic
+  where m_statistic_type_id = 'FREQ'
   """
 
 var concept_synonym_query = f"""
@@ -86,19 +105,12 @@ var concept_relationship_query = f"""
   AND m_modif_end_datetime IS NULL
   """
 
-if (concept_id == "-1"){// full
-
-pg.inputBulk(query=concept_query,  numPartitions=4, partitionColumn="concept_id").registerTempTable("concept")
-pg.inputBulk(query=concept_synonym_query,  numPartitions=4, partitionColumn="concept_id").registerTempTable("concept_synonym")
-pg.inputBulk(query=concept_relationship_query,  numPartitions=4, partitionColumn="concept_id_1").registerTempTable("concept_relationship")
-
-}else {
-
 pg.input(query=concept_query + f" where concept_id IN ( $concept_id )").registerTempTable("concept")
+pg.input(query=project_query).registerTempTable("project")
+pg.input(query=avg_query + f" and m_concept_id IN ( $concept_id )").registerTempTable("stats_avg")
+pg.input(query=freq_query + f" and m_concept_id IN ( $concept_id )").registerTempTable("stats_freq")
 pg.input(query=concept_synonym_query + f" where concept_id IN ($concept_id)").registerTempTable("concept_synonym")
 pg.input(query=concept_relationship_query + f" AND invalid_reason IS DISTINCT FROM 'D' AND concept_id_1 IN ( $concept_id )").registerTempTable("concept_relationship")
-
-}
 
 
 
@@ -108,18 +120,11 @@ pg.input(query=concept_relationship_query + f" AND invalid_reason IS DISTINCT FR
 //
 
 spark.sql("""
-  select   concept_id
-           , max(value_is_text) as value_is_text
-         from observation
-         group by concept_id
-""").registerTempTable("obsTextDF")
-
-spark.sql("""
    SELECT concept_id                 
    , collect_list(concept_synonym_name) as concept_synonym_name_en
    FROM concept_synonym
    JOIN concept USING (concept_id)
-   WHERE concept_synonym_name != concept_name
+   WHERE concept_synonym.concept_synonym_name != concept.concept_name
    AND concept_synonym.language_concept_id = 4180186 -- ENGLISH
    GROUP BY concept_id
 """).registerTempTable("dfsynen")
@@ -206,7 +211,7 @@ val resultDF = spark.sql("""
    , COALESCE(local_map_number, 0) as local_map_number
    , m_value_avg as value_avg
    , m_value_avg is not null value_is_numeric
-   , value_is_text = 1  as value_is_text
+   , m_project_type_id
    FROM concept
    LEFT JOIN mappeddf USING (concept_id)
    LEFT JOIN dfsynen USING (concept_id)
@@ -214,7 +219,9 @@ val resultDF = spark.sql("""
    LEFT JOIN dfmapen USING (concept_id)
    LEFT JOIN dfmapfr USING (concept_id)
    LEFT JOIN localMapDF USING (concept_id)
-   LEFT JOIN obsTextDF USING (concept_id)
+   LEFT JOIN stats_avg USING (concept_id)
+   LEFT JOIN stats_freq USING (concept_id)
+   LEFT JOIN project USING (m_project_id)
 """)
 
 //

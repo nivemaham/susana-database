@@ -140,6 +140,7 @@
     <field name="value_is_text" type="boolean" indexed="true" stored="true" multiValued="false"/>
     <field name="local_map_number" type="plong" indexed="true" stored="true" multiValued="false"/>
     <field name="invalid_reason" type="text_general" indexed="true" stored="true" multiValued="false"/>
+    <field name="m_project_type_id" type="text_general" indexed="true" stored="true" multiValued="false"/>
           
        
            
@@ -727,6 +728,8 @@
     <fieldType name="text_fr" class="solr.TextField" positionIncrementGap="100">
       <analyzer type="index">
   	<tokenizer class="solr.StandardTokenizerFactory"/>
+
+  	<filter class="solr.PatternReplaceFilterFactory" pattern="_" replacement=" " replace="all"/>
   	<filter class="solr.ICUFoldingFilterFactory"/>
         <!-- removes l', etc -->
         <filter class="solr.ElisionFilterFactory" ignoreCase="true" articles="lang/contractions_fr.txt"/>

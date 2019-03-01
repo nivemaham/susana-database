@@ -96,7 +96,7 @@ def loadConceptCsv(pg:PGUtil, csvPath:String, m_project_type_id:String, m_langua
       RETURNING concept_id, concept_name
     )
       INSERT INTO mapper_statistic 
-      (m_concept_id, m_statistic_type_id, m_value_as_number, m_algo_id, m_user_id, m_valid_start_date)
+      (m_concept_id, m_statistic_type_id, m_value_as_number, m_algo_id, m_user_id, m_valid_start_datetime)
       SELECT concept_id, m_statistic_type_id, m_value_as_number, 4, 10, now()
       FROM ins
       JOIN concept_tmp USING (concept_name)
@@ -145,8 +145,8 @@ def verifyColumnUnique(df:Dataset[Row], column:String):Dataset[Row]={
 
 val url = "jdbc:postgresql://localhost:5432/mimic?user=mapper&currentSchema=map"
 val pg = PGUtil(spark, url, "/home/natus/spark-postgres-tmp")
-val TERM_PATH = "/home/natus/git/conceptual-mapping/terminologies/"
-var conf = spark.read.option("inferSchema","true").option("header","true").format("csv").load("/home/natus/git/conceptual-mapping/interchuprojet.csv")
+val TERM_PATH = "/home/mapper/app/conceptual-mapping/terminologies/"
+var conf = spark.read.option("inferSchema","true").option("header","true").format("csv").load("/home/mapper/app/conceptual-mapping/terminologies/interchuprojet.csv")
 var it = conf.rdd.toLocalIterator
 while (it.hasNext){
   var value = it.next

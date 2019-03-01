@@ -1,0 +1,196 @@
+/opt/spark/current/bin/spark-shell --driver-class-path /opt/lib/postgresql-42.2.5.jar  --jars "/opt/lib/spark-solr-3.7.0-SNAPSHOT-shaded.jar,/opt/lib/spark-postgres-2.4.0-SNAPSHOT-shaded.jar" --master local[20] --driver-memory=10G  --executor-memory=4G  -i spark/etl-csv-import.scala
+2019-02-21 19:53:21 WARN  Utils:66 - Your hostname, manjaro-server resolves to a loopback address: 127.0.1.1; using 192.168.0.10 instead (on interface enp3s0)
+2019-02-21 19:53:21 WARN  Utils:66 - Set SPARK_LOCAL_IP if you need to bind to another address
+2019-02-21 19:53:25 WARN  Utils:66 - Service 'SparkUI' could not bind on port 4040. Attempting port 4041.
+2019-02-21 19:53:25 WARN  Utils:66 - Service 'SparkUI' could not bind on port 4041. Attempting port 4042.
+Spark context Web UI available at http://manjaro-server.local:4042
+Spark context available as 'sc' (master = local[20], app id = local-1550775205831).
+Spark session available as 'spark'.
+warning: there was one deprecation warning; re-run with -deprecation for details
+Begin: /home/natus/git/conceptual-mapping/terminologies/aphp/APHP_orbis_ccam.csv
+2019-02-21 19:53:31 WARN  General:96 - Plugin (Bundle) "org.datanucleus" is already registered. Ensure you dont have multiple JAR versions of the same plugin in the classpath. The URL "file:/opt/spark/current/jars/datanucleus-core-3.2.10.jar" is already registered, and you are trying to register an identical plugin located at URL "file:/opt/spark/spark-2.4.0-bin-hadoop2.7/jars/datanucleus-core-3.2.10.jar."
+2019-02-21 19:53:31 WARN  General:96 - Plugin (Bundle) "org.datanucleus.api.jdo" is already registered. Ensure you dont have multiple JAR versions of the same plugin in the classpath. The URL "file:/opt/spark/current/jars/datanucleus-api-jdo-3.2.6.jar" is already registered, and you are trying to register an identical plugin located at URL "file:/opt/spark/spark-2.4.0-bin-hadoop2.7/jars/datanucleus-api-jdo-3.2.6.jar."
+2019-02-21 19:53:31 WARN  General:96 - Plugin (Bundle) "org.datanucleus.store.rdbms" is already registered. Ensure you dont have multiple JAR versions of the same plugin in the classpath. The URL "file:/opt/spark/spark-2.4.0-bin-hadoop2.7/jars/datanucleus-rdbms-3.2.9.jar" is already registered, and you are trying to register an identical plugin located at URL "file:/opt/spark/current/jars/datanucleus-rdbms-3.2.9.jar."
+2019-02-21 19:53:34 WARN  ObjectStore:568 - Failed to get database global_temp, returning NoSuchObjectException
+0 missing rows
++------------+------------+-------------+-----------------+---------+-------------+-------------------+-----------------+
+|concept_name|concept_code|m_language_id|m_project_type_id|domain_id|vocabulary_id|m_statistic_type_id|m_value_as_number|
++------------+------------+-------------+-----------------+---------+-------------+-------------------+-----------------+
+|     Inconnu|     DGCC835|           FR|             APHP|procedure|         ccam|               FREQ|                1|
+|     Inconnu|     DELF086|           FR|             APHP|procedure|         ccam|               FREQ|                1|
+|     Inconnu|     ALT+074|           FR|             APHP|procedure|         ccam|               FREQ|                4|
+|     Inconnu|     BLQ+273|           FR|             APHP|procedure|         ccam|               FREQ|                3|
+|     Inconnu|     ZGM+247|           FR|             APHP|procedure|         ccam|               FREQ|                3|
+|     Inconnu|     HSQ+014|           FR|             APHP|procedure|         ccam|               FREQ|                4|
+|     Inconnu|     BLR+257|           FR|             APHP|procedure|         ccam|               FREQ|                3|
+|     Inconnu|     BLQ+018|           FR|             APHP|procedure|         ccam|               FREQ|                2|
+|     Inconnu|     ZAM+064|           FR|             APHP|procedure|         ccam|               FREQ|                1|
+|     Inconnu|     ZFR+111|           FR|             APHP|procedure|         ccam|               FREQ|                4|
+|     Inconnu|     GKR+256|           FR|             APHP|procedure|         ccam|               FREQ|                4|
+|     Inconnu|     AGR+298|           FR|             APHP|procedure|         ccam|               FREQ|                4|
+|     Inconnu|     ALT+085|           FR|             APHP|procedure|         ccam|               FREQ|                4|
+|     Inconnu|     LHR+113|           FR|             APHP|procedure|         ccam|               FREQ|                4|
+|     Inconnu|     MKR+074|           FR|             APHP|procedure|         ccam|               FREQ|                1|
+|     Inconnu|     GKQ+186|           FR|             APHP|procedure|         ccam|               FREQ|                1|
+|     Inconnu|     GLJ+199|           FR|             APHP|procedure|         ccam|               FREQ|                4|
+|     Inconnu|     GKQ+139|           FR|             APHP|procedure|         ccam|               FREQ|                4|
+|     Inconnu|     ZGQ+294|           FR|             APHP|procedure|         ccam|               FREQ|                4|
+|     Inconnu|     GLR+170|           FR|             APHP|procedure|         ccam|               FREQ|                3|
++------------+------------+-------------+-----------------+---------+-------------+-------------------+-----------------+
+only showing top 20 rows
+
+removed 518 rows
+2019-02-21 19:53:40 ERROR Executor:91 - Exception in task 0.0 in stage 22.0 (TID 649)
+org.postgresql.util.PSQLException: ERROR: invalid input syntax for type double precision: "par greffe ou matériau inerte non prothétique""
+  Where: COPY concept_tmp, line 1, column m_value_as_number: "par greffe ou matériau inerte non prothétique""
+	at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2440)
+	at org.postgresql.core.v3.QueryExecutorImpl.processCopyResults(QueryExecutorImpl.java:1116)
+	at org.postgresql.core.v3.QueryExecutorImpl.endCopy(QueryExecutorImpl.java:965)
+	at org.postgresql.core.v3.CopyInImpl.endCopy(CopyInImpl.java:45)
+	at org.postgresql.copy.CopyManager.copyIn(CopyManager.java:223)
+	at org.postgresql.copy.CopyManager.copyIn(CopyManager.java:199)
+	at fr.aphp.eds.spark.postgres.PGUtil$$anonfun$outputBulkCsvLow$1$$anonfun$apply$1.apply(PGUtil.scala:294)
+	at fr.aphp.eds.spark.postgres.PGUtil$$anonfun$outputBulkCsvLow$1$$anonfun$apply$1.apply(PGUtil.scala:291)
+	at scala.collection.Iterator$class.foreach(Iterator.scala:891)
+	at org.apache.spark.InterruptibleIterator.foreach(InterruptibleIterator.scala:28)
+	at fr.aphp.eds.spark.postgres.PGUtil$$anonfun$outputBulkCsvLow$1.apply(PGUtil.scala:290)
+	at fr.aphp.eds.spark.postgres.PGUtil$$anonfun$outputBulkCsvLow$1.apply(PGUtil.scala:288)
+	at org.apache.spark.rdd.RDD$$anonfun$foreachPartition$1$$anonfun$apply$28.apply(RDD.scala:935)
+	at org.apache.spark.rdd.RDD$$anonfun$foreachPartition$1$$anonfun$apply$28.apply(RDD.scala:935)
+	at org.apache.spark.SparkContext$$anonfun$runJob$5.apply(SparkContext.scala:2101)
+	at org.apache.spark.SparkContext$$anonfun$runJob$5.apply(SparkContext.scala:2101)
+	at org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:90)
+	at org.apache.spark.scheduler.Task.run(Task.scala:121)
+	at org.apache.spark.executor.Executor$TaskRunner$$anonfun$10.apply(Executor.scala:402)
+	at org.apache.spark.util.Utils$.tryWithSafeFinally(Utils.scala:1360)
+	at org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:408)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+2019-02-21 19:53:40 WARN  TaskSetManager:66 - Lost task 0.0 in stage 22.0 (TID 649, localhost, executor driver): org.postgresql.util.PSQLException: ERROR: invalid input syntax for type double precision: "par greffe ou matériau inerte non prothétique""
+  Where: COPY concept_tmp, line 1, column m_value_as_number: "par greffe ou matériau inerte non prothétique""
+	at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2440)
+	at org.postgresql.core.v3.QueryExecutorImpl.processCopyResults(QueryExecutorImpl.java:1116)
+	at org.postgresql.core.v3.QueryExecutorImpl.endCopy(QueryExecutorImpl.java:965)
+	at org.postgresql.core.v3.CopyInImpl.endCopy(CopyInImpl.java:45)
+	at org.postgresql.copy.CopyManager.copyIn(CopyManager.java:223)
+	at org.postgresql.copy.CopyManager.copyIn(CopyManager.java:199)
+	at fr.aphp.eds.spark.postgres.PGUtil$$anonfun$outputBulkCsvLow$1$$anonfun$apply$1.apply(PGUtil.scala:294)
+	at fr.aphp.eds.spark.postgres.PGUtil$$anonfun$outputBulkCsvLow$1$$anonfun$apply$1.apply(PGUtil.scala:291)
+	at scala.collection.Iterator$class.foreach(Iterator.scala:891)
+	at org.apache.spark.InterruptibleIterator.foreach(InterruptibleIterator.scala:28)
+	at fr.aphp.eds.spark.postgres.PGUtil$$anonfun$outputBulkCsvLow$1.apply(PGUtil.scala:290)
+	at fr.aphp.eds.spark.postgres.PGUtil$$anonfun$outputBulkCsvLow$1.apply(PGUtil.scala:288)
+	at org.apache.spark.rdd.RDD$$anonfun$foreachPartition$1$$anonfun$apply$28.apply(RDD.scala:935)
+	at org.apache.spark.rdd.RDD$$anonfun$foreachPartition$1$$anonfun$apply$28.apply(RDD.scala:935)
+	at org.apache.spark.SparkContext$$anonfun$runJob$5.apply(SparkContext.scala:2101)
+	at org.apache.spark.SparkContext$$anonfun$runJob$5.apply(SparkContext.scala:2101)
+	at org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:90)
+	at org.apache.spark.scheduler.Task.run(Task.scala:121)
+	at org.apache.spark.executor.Executor$TaskRunner$$anonfun$10.apply(Executor.scala:402)
+	at org.apache.spark.util.Utils$.tryWithSafeFinally(Utils.scala:1360)
+	at org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:408)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+2019-02-21 19:53:40 ERROR TaskSetManager:70 - Task 0 in stage 22.0 failed 1 times; aborting job
+2019-02-21 19:53:40 WARN  TaskSetManager:66 - Lost task 1.0 in stage 22.0 (TID 650, localhost, executor driver): TaskKilled (Stage cancelled)
+org.apache.spark.SparkException: Job aborted due to stage failure: Task 0 in stage 22.0 failed 1 times, most recent failure: Lost task 0.0 in stage 22.0 (TID 649, localhost, executor driver): org.postgresql.util.PSQLException: ERROR: invalid input syntax for type double precision: "par greffe ou matériau inerte non prothétique""
+  Where: COPY concept_tmp, line 1, column m_value_as_number: "par greffe ou matériau inerte non prothétique""
+	at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2440)
+	at org.postgresql.core.v3.QueryExecutorImpl.processCopyResults(QueryExecutorImpl.java:1116)
+	at org.postgresql.core.v3.QueryExecutorImpl.endCopy(QueryExecutorImpl.java:965)
+	at org.postgresql.core.v3.CopyInImpl.endCopy(CopyInImpl.java:45)
+	at org.postgresql.copy.CopyManager.copyIn(CopyManager.java:223)
+	at org.postgresql.copy.CopyManager.copyIn(CopyManager.java:199)
+	at fr.aphp.eds.spark.postgres.PGUtil$$anonfun$outputBulkCsvLow$1$$anonfun$apply$1.apply(PGUtil.scala:294)
+	at fr.aphp.eds.spark.postgres.PGUtil$$anonfun$outputBulkCsvLow$1$$anonfun$apply$1.apply(PGUtil.scala:291)
+	at scala.collection.Iterator$class.foreach(Iterator.scala:891)
+	at org.apache.spark.InterruptibleIterator.foreach(InterruptibleIterator.scala:28)
+	at fr.aphp.eds.spark.postgres.PGUtil$$anonfun$outputBulkCsvLow$1.apply(PGUtil.scala:290)
+	at fr.aphp.eds.spark.postgres.PGUtil$$anonfun$outputBulkCsvLow$1.apply(PGUtil.scala:288)
+	at org.apache.spark.rdd.RDD$$anonfun$foreachPartition$1$$anonfun$apply$28.apply(RDD.scala:935)
+	at org.apache.spark.rdd.RDD$$anonfun$foreachPartition$1$$anonfun$apply$28.apply(RDD.scala:935)
+	at org.apache.spark.SparkContext$$anonfun$runJob$5.apply(SparkContext.scala:2101)
+	at org.apache.spark.SparkContext$$anonfun$runJob$5.apply(SparkContext.scala:2101)
+	at org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:90)
+	at org.apache.spark.scheduler.Task.run(Task.scala:121)
+	at org.apache.spark.executor.Executor$TaskRunner$$anonfun$10.apply(Executor.scala:402)
+	at org.apache.spark.util.Utils$.tryWithSafeFinally(Utils.scala:1360)
+	at org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:408)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Driver stacktrace:
+  at org.apache.spark.scheduler.DAGScheduler.org$apache$spark$scheduler$DAGScheduler$$failJobAndIndependentStages(DAGScheduler.scala:1887)
+  at org.apache.spark.scheduler.DAGScheduler$$anonfun$abortStage$1.apply(DAGScheduler.scala:1875)
+  at org.apache.spark.scheduler.DAGScheduler$$anonfun$abortStage$1.apply(DAGScheduler.scala:1874)
+  at scala.collection.mutable.ResizableArray$class.foreach(ResizableArray.scala:59)
+  at scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:48)
+  at org.apache.spark.scheduler.DAGScheduler.abortStage(DAGScheduler.scala:1874)
+  at org.apache.spark.scheduler.DAGScheduler$$anonfun$handleTaskSetFailed$1.apply(DAGScheduler.scala:926)
+  at org.apache.spark.scheduler.DAGScheduler$$anonfun$handleTaskSetFailed$1.apply(DAGScheduler.scala:926)
+  at scala.Option.foreach(Option.scala:257)
+  at org.apache.spark.scheduler.DAGScheduler.handleTaskSetFailed(DAGScheduler.scala:926)
+  at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.doOnReceive(DAGScheduler.scala:2108)
+  at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:2057)
+  at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:2046)
+  at org.apache.spark.util.EventLoop$$anon$1.run(EventLoop.scala:49)
+  at org.apache.spark.scheduler.DAGScheduler.runJob(DAGScheduler.scala:737)
+  at org.apache.spark.SparkContext.runJob(SparkContext.scala:2061)
+  at org.apache.spark.SparkContext.runJob(SparkContext.scala:2082)
+  at org.apache.spark.SparkContext.runJob(SparkContext.scala:2101)
+  at org.apache.spark.SparkContext.runJob(SparkContext.scala:2126)
+  at org.apache.spark.rdd.RDD$$anonfun$foreachPartition$1.apply(RDD.scala:935)
+  at org.apache.spark.rdd.RDD$$anonfun$foreachPartition$1.apply(RDD.scala:933)
+  at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:151)
+  at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:112)
+  at org.apache.spark.rdd.RDD.withScope(RDD.scala:363)
+  at org.apache.spark.rdd.RDD.foreachPartition(RDD.scala:933)
+  at fr.aphp.eds.spark.postgres.PGUtil$.outputBulkCsvLow(PGUtil.scala:287)
+  at fr.aphp.eds.spark.postgres.PGUtil$.outputBulkCsv(PGUtil.scala:273)
+  at fr.aphp.eds.spark.postgres.PGUtil.outputBulk(PGUtil.scala:82)
+  at loadConceptCsv(spark/etl-csv-import.scala:88)
+  ... 65 elided
+Caused by: org.postgresql.util.PSQLException: ERROR: invalid input syntax for type double precision: "par greffe ou matériau inerte non prothétique""
+  Where: COPY concept_tmp, line 1, column m_value_as_number: "par greffe ou matériau inerte non prothétique""
+  at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2440)
+  at org.postgresql.core.v3.QueryExecutorImpl.processCopyResults(QueryExecutorImpl.java:1116)
+  at org.postgresql.core.v3.QueryExecutorImpl.endCopy(QueryExecutorImpl.java:965)
+  at org.postgresql.core.v3.CopyInImpl.endCopy(CopyInImpl.java:45)
+  at org.postgresql.copy.CopyManager.copyIn(CopyManager.java:223)
+  at org.postgresql.copy.CopyManager.copyIn(CopyManager.java:199)
+  at fr.aphp.eds.spark.postgres.PGUtil$$anonfun$outputBulkCsvLow$1$$anonfun$apply$1.apply(PGUtil.scala:294)
+  at fr.aphp.eds.spark.postgres.PGUtil$$anonfun$outputBulkCsvLow$1$$anonfun$apply$1.apply(PGUtil.scala:291)
+  at scala.collection.Iterator$class.foreach(Iterator.scala:891)
+  at org.apache.spark.InterruptibleIterator.foreach(InterruptibleIterator.scala:28)
+  at fr.aphp.eds.spark.postgres.PGUtil$$anonfun$outputBulkCsvLow$1.apply(PGUtil.scala:290)
+  at fr.aphp.eds.spark.postgres.PGUtil$$anonfun$outputBulkCsvLow$1.apply(PGUtil.scala:288)
+  at org.apache.spark.rdd.RDD$$anonfun$foreachPartition$1$$anonfun$apply$28.apply(RDD.scala:935)
+  at org.apache.spark.rdd.RDD$$anonfun$foreachPartition$1$$anonfun$apply$28.apply(RDD.scala:935)
+  at org.apache.spark.SparkContext$$anonfun$runJob$5.apply(SparkContext.scala:2101)
+  at org.apache.spark.SparkContext$$anonfun$runJob$5.apply(SparkContext.scala:2101)
+  at org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:90)
+  at org.apache.spark.scheduler.Task.run(Task.scala:121)
+  at org.apache.spark.executor.Executor$TaskRunner$$anonfun$10.apply(Executor.scala:402)
+  at org.apache.spark.util.Utils$.tryWithSafeFinally(Utils.scala:1360)
+  at org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:408)
+  at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+  at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+  at java.lang.Thread.run(Thread.java:748)
+Welcome to
+      ____              __
+     / __/__  ___ _____/ /__
+    _\ \/ _ \/ _ `/ __/  '_/
+   /___/ .__/\_,_/_/ /_/\_\   version 2.4.0
+      /_/
+         
+Using Scala version 2.11.12 (OpenJDK 64-Bit Server VM, Java 1.8.0_192)
+Type in expressions to have them evaluated.
+Type :help for more information.
+
+scala> 
+
+scala> 

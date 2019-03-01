@@ -74,7 +74,7 @@ pg.outputBulk("concept_tmp", result, 2)
 
 pg.sqlExec("""
   UPDATE mapper_statistic 
-  set m_value_as_number = concept_tmp.m_frequency_value, m_algo_id = 4, m_user_id = 10, m_valid_start_date=now()
+  set m_value_as_number = concept_tmp.m_frequency_value, m_algo_id = 4, m_user_id = 10, m_valid_start_datetime=now()
   FROM concept_tmp 
   WHERE mapper_statistic.m_concept_id = concept_tmp.concept_id 
   AND m_statistic_type_id = 'FREQ'
@@ -82,7 +82,7 @@ pg.sqlExec("""
 
 pg.sqlExec("""
   INSERT INTO mapper_statistic 
-  (m_concept_id, m_statistic_type_id, m_value_as_number, m_algo_id, m_user_id, m_valid_start_date)
+  (m_concept_id, m_statistic_type_id, m_value_as_number, m_algo_id, m_user_id, m_valid_start_datetime)
   SELECT concept_id, 'AVG', m_frequency_value, 4, 10, now()
   FROM concept_tmp
   LEFT JOIN mapper_statistic ON concept_tmp.concept_id = mapper_statistic.m_concept_id
@@ -131,7 +131,7 @@ pg.outputBulk("concept_tmp", avgResult, 2)
 
 pg.sqlExec("""
   UPDATE mapper_statistic 
-  set m_value_as_number = concept_tmp.m_value_avg, m_algo_id = 4, m_user_id = 10, m_valid_start_date=now()
+  set m_value_as_number = concept_tmp.m_value_avg, m_algo_id = 4, m_user_id = 10, m_valid_start_datetime=now()
   FROM concept_tmp 
   WHERE mapper_statistic.m_concept_id = concept_tmp.concept_id 
   AND m_statistic_type_id = 'AVG'
@@ -139,7 +139,7 @@ pg.sqlExec("""
 
 pg.sqlExec("""
   INSERT INTO mapper_statistic 
-  (m_concept_id, m_statistic_type_id, m_value_as_number, m_algo_id, m_user_id, m_valid_start_date)
+  (m_concept_id, m_statistic_type_id, m_value_as_number, m_algo_id, m_user_id, m_valid_start_datetime)
   SELECT concept_id, 'AVG', m_value_avg, 4, 10, now()
   FROM concept_tmp
   LEFT JOIN mapper_statistic ON concept_tmp.concept_id = mapper_statistic.m_concept_id

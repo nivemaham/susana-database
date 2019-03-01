@@ -64,9 +64,17 @@ pg.inputBulk(query=f"""
   , standard_concept
   , concept_code
   , m_language_id
+  , m_project_id
   , invalid_reason 
   from concept
   """,  numPartitions=4, partitionColumn="concept_id").registerTempTable("concept")
+
+pg.inputBulk(query=f"""
+  select 
+     m_project_id           
+   , m_project_type_id      
+  from mapper_project
+  """,  numPartitions=4, partitionColumn="m_project_id").registerTempTable("project")
 
 pg.inputBulk(query=f"""
   select m_concept_id as concept_id
@@ -123,7 +131,7 @@ spark.sql("""
    FROM concept_synonym
    JOIN concept USING (concept_id)
    WHERE concept_synonym_name != concept_name
-   AND concept_synonym.language_concept_id = 4180190 -- ENGLISH
+   AND concept_synonym.language_concept_id = 4180190 -- FRENCH
    GROUP BY concept_id
 """).registerTempTable("dfsynfr")
 
@@ -191,14 +199,15 @@ val resultDF = spark.sql("""
    , COALESCE(m_language_id, 'EN')       as m_language_id
    , m_frequency_value   as frequency
    , CASE 
-     WHEN standard_concept_mapped_name IS NOT NULL THEN 'S' 
-     WHEN non_standard_concept_mapped_name IS NOT NULL THEN 'NS' 
-     WHEN concept_relation_name IS NOT NULL THEN 'R' 
-     ELSE 'EMPTY'
+       WHEN standard_concept_mapped_name IS NOT NULL THEN 'S' 
+       WHEN non_standard_concept_mapped_name IS NOT NULL THEN 'NS' 
+       WHEN concept_relation_name IS NOT NULL THEN 'R' 
+       ELSE 'EMPTY'
      END as is_mapped
    , COALESCE(local_map_number, 0) as local_map_number
    , m_value_avg as value_avg
    , m_value_avg is not null value_is_numeric
+   , m_project_type_id
    FROM concept
    LEFT JOIN mappeddf USING (concept_id)
    LEFT JOIN dfsynen USING (concept_id)
@@ -208,6 +217,7 @@ val resultDF = spark.sql("""
    LEFT JOIN localMapDF USING (concept_id)
    LEFT JOIN stats_avg USING (concept_id)
    LEFT JOIN stats_freq USING (concept_id)
+   LEFT JOIN project USING (m_project_id)
 """)
 
 //
