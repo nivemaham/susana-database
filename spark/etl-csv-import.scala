@@ -4,7 +4,6 @@ import org.apache.spark.sql.Row
 
 def loadConceptCsv(pg:PGUtil, csvPath:String, m_project_type_id:String, m_language_id:String, domain_id:String, vocabulary_id:String, sep:String, quote:String):Unit = {
   println(f"Begin: $csvPath")
-
   
   // READ
   //
@@ -13,6 +12,7 @@ def loadConceptCsv(pg:PGUtil, csvPath:String, m_project_type_id:String, m_langua
     .option("quote","\"")
     .option("escape",quote)
     .option("header","true")
+    .option("multiline","true")
     .option("delimiter",sep)
     .option("mode","FAILFAST")
     .format("csv").load(csvPath)
@@ -45,7 +45,7 @@ def loadConceptCsv(pg:PGUtil, csvPath:String, m_project_type_id:String, m_langua
 
   var concept_tmp = df.select('concept_name, 'concept_code, 'm_language_id, 'm_project_type_id, 'domain_id, 'vocabulary_id, 'm_statistic_type_id, 'm_value_as_number)
   concept_tmp = verifyColumnNotNull(concept_tmp, "concept_name")
-  concept_tmp = verifyColumnUnique(concept_tmp, "concept_name")
+  concept_tmp = verifyColumnUnique(concept_tmp, "concept_code", "concept_name")
   // LOAD
   //
   
@@ -106,6 +106,7 @@ def loadConceptCsv(pg:PGUtil, csvPath:String, m_project_type_id:String, m_langua
   pg.tableDrop("concept_tmp")
 
   println(f"Loaded: $csvPath")
+
   }
 }
 
@@ -131,7 +132,7 @@ def verifyColumnNotNull(df:Dataset[Row], column:String):Dataset[Row]={
   sql(f"select * from nullTmp where $column IS NOT NULL")
 }
 
-def verifyColumnUnique(df:Dataset[Row], column:String):Dataset[Row]={
+def verifyColumnUnique(df:Dataset[Row], column: String*):Dataset[Row]={
   val tmp = df.dropDuplicates(column)
   df.except(tmp).show
   val diff = df.count - tmp.count
@@ -146,10 +147,11 @@ def verifyColumnUnique(df:Dataset[Row], column:String):Dataset[Row]={
 val url = "jdbc:postgresql://localhost:5432/mimic?user=mapper&currentSchema=map"
 val pg = PGUtil(spark, url, "/home/natus/spark-postgres-tmp")
 val TERM_PATH = "/home/mapper/app/conceptual-mapping/terminologies/"
-var conf = spark.read.option("inferSchema","true").option("header","true").format("csv").load("/home/mapper/app/conceptual-mapping/terminologies/interchuprojet.csv")
+var conf = spark.read.option("inferSchema","true").option("header","true").format("csv").load(TERM_PATH + "interchuprojet.csv")
 var it = conf.rdd.toLocalIterator
 while (it.hasNext){
   var value = it.next
+  println(value)
   var active     = value.getAs("active").toString  
   var file       = value.getAs("file").toString
   var project    = value.getAs("project").toString
@@ -158,7 +160,7 @@ while (it.hasNext){
   var language   = value.getAs("language").toString
   var mode       = value.getAs("mode").toString
   var sep        = value.getAs("sep").toString
-  var quote        = value.getAs("quote").toString
+  var quote      = value.getAs("quote").toString
   var csvPath    = TERM_PATH + project.toLowerCase + "/" + file
   if(active=="1")
   loadConceptCsv(pg, csvPath, project, language, domain, vocabulary, sep, quote)

@@ -742,6 +742,7 @@
       <analyzer type="query">
   	<tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms-fr.txt" ignoreCase="true" expand="true"/>
+  	<filter class="solr.PatternReplaceFilterFactory" pattern="_" replacement=" " replace="all"/>
   	<filter class="solr.ICUFoldingFilterFactory"/>
         <!-- removes l', etc -->
         <filter class="solr.ElisionFilterFactory" ignoreCase="true" articles="lang/contractions_fr.txt"/>
@@ -756,6 +757,7 @@
     <fieldType name="text_fr_en" class="solr.TextField" positionIncrementGap="100">
       <analyzer type="index">
   	<tokenizer class="solr.StandardTokenizerFactory"/>
+  	<filter class="solr.PatternReplaceFilterFactory" pattern="_" replacement=" " replace="all"/>
   	<filter class="solr.ICUFoldingFilterFactory"/>
         <!-- removes l', etc -->
         <filter class="solr.ElisionFilterFactory" ignoreCase="true" articles="lang/contractions_fr.txt"/>
@@ -768,6 +770,7 @@
       <analyzer type="query">
   	<tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms-fr-en.txt" ignoreCase="true" expand="true"/>
+  	<filter class="solr.PatternReplaceFilterFactory" pattern="_" replacement=" " replace="all"/>
   	<filter class="solr.ICUFoldingFilterFactory"/>
         <!-- removes l', etc -->
         <filter class="solr.ElisionFilterFactory" ignoreCase="true" articles="lang/contractions_fr.txt"/>

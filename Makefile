@@ -29,7 +29,7 @@ solr-create:
 	$(SOLR_FOLDER)/bin/solr create -c omop-concept -n omop-concept-conf -p 8983 -V
 
 solr-start:
-	$(SOLR_FOLDER)/bin/solr start -e cloud -m 16G -all #-noprompt
+	$(SOLR_FOLDER)/bin/solr start -e cloud -m 20G -all #-noprompt
 
 solr-stop:
 	$(SOLR_FOLDER)/bin/solr stop -all
@@ -55,8 +55,11 @@ spark-shell:
 spark-translate:
 	PYTHONSTARTUP=spark/etl-translate.py pyspark --driver-class-path /opt/lib/postgresql-42.2.5.jar  --jars "/opt/lib/postgresql-42.2.5.jar,/opt/lib/spark-postgres-2.4.0-SNAPSHOT-shaded.jar"  --master local[20]
 
-spark-cim10:
-	PYTHONSTARTUP="spark/etl-cim10.py" pyspark --driver-class-path /opt/lib/postgresql-42.2.5.jar  --jars "/opt/lib/postgresql-42.2.5.jar,/opt/lib/spark-postgres-2.4.0-SNAPSHOT-shaded.jar"  --master local[20]
+#spark-cim10:
+#	PYTHONSTARTUP="spark/etl-cim10.py" pyspark --driver-class-path /opt/lib/postgresql-42.2.5.jar  --jars "/opt/lib/postgresql-42.2.5.jar,/opt/lib/spark-postgres-2.4.0-SNAPSHOT-shaded.jar"  --master local[20]
 
 spark-csv-import:
 	$(SPARK_HOME)/bin/spark-shell --driver-class-path /opt/lib/postgresql-42.2.5.jar  --jars "/opt/lib/spark-solr-3.7.0-SNAPSHOT-shaded.jar,/opt/lib/spark-postgres-2.4.0-SNAPSHOT-shaded.jar" --master local[20] --driver-memory=10G  --executor-memory=4G  -i spark/etl-csv-import.scala
+
+spark-cim10:
+	$(SPARK_HOME)/bin/spark-shell --driver-class-path /opt/lib/postgresql-42.2.5.jar  --jars "/opt/lib/spark-solr-3.7.0-SNAPSHOT-shaded.jar,/opt/lib/spark-postgres-2.4.0-SNAPSHOT-shaded.jar" --master local[20] --driver-memory=10G  --executor-memory=4G  -i spark/etl-cim10.scala
