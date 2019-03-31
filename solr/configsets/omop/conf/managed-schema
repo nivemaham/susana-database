@@ -118,20 +118,20 @@
     <field name="_text_" type="text_general" indexed="true" stored="false" multiValued="true"/>
 
     <field name="concept_name" type="text_en" indexed="false" />
-    <field name="concept_name_en" type="text_en" indexed="true"  stored="true" multiValued="false" termVectors="true" storeOffsetsWithPositions="true"/>
-    <field name="concept_name_fr" type="text_fr" indexed="true" stored="true" multiValued="false" termVectors="true" storeOffsetsWithPositions="true" />
-    <field name="concept_name_fr_en" type="text_fr_en" indexed="true" stored="true" multiValued="false" termVectors="true" storeOffsetsWithPositions="true" />
+    <field name="concept_name_en" type="text_en" indexed="true"  stored="false" multiValued="false" />
+    <field name="concept_name_fr" type="text_fr" indexed="true" stored="false" multiValued="false"  />
+    <field name="concept_name_fr_en" type="text_fr_en" indexed="true" stored="false" multiValued="false" />
     <field name="domain_id" type="text_general" indexed="true" stored="true" multiValued="false"/>
     <field name="vocabulary_id" type="text_general" indexed="true" stored="true" multiValued="false"/>
     <field name="concept_class_id" type="text_general" indexed="true" stored="true" multiValued="false"/>
     <field name="standard_concept" type="text_general" indexed="true" stored="true" multiValued="false"/>
     <field name="concept_code" type="text_general" indexed="true" stored="true" multiValued="false"/>
-    <field name="concept_synonym_name_en" type="text_en" indexed="true" stored="true" multiValued="true" termVectors="true" storeOffsetsWithPositions="true"/>
-    <field name="concept_synonym_name_fr" type="text_fr" indexed="true" stored="true" multiValued="true" termVectors="true" storeOffsetsWithPositions="true"/>
-    <field name="concept_synonym_name_fr_en" type="text_fr_en" indexed="true" stored="true" multiValued="true" termVectors="true" storeOffsetsWithPositions="true"/>
-    <field name="concept_mapped_name_en" type="text_en" indexed="true" stored="true" multiValued="true" termVectors="true" storeOffsetsWithPositions="true"/>
-    <field name="concept_mapped_name_fr" type="text_fr" indexed="true" stored="true" multiValued="true" termVectors="true" storeOffsetsWithPositions="true"/>
-    <field name="concept_mapped_name_fr_en" type="text_fr_en" indexed="true" stored="true" multiValued="true" termVectors="true" storeOffsetsWithPositions="true"/>
+    <field name="concept_synonym_name_en" type="text_en" indexed="true" stored="false" multiValued="true" />
+    <field name="concept_synonym_name_fr" type="text_fr" indexed="true" stored="false" multiValued="true"/>
+    <field name="concept_synonym_name_fr_en" type="text_fr_en" indexed="true" stored="false" multiValued="true" />
+    <field name="concept_mapped_name_en" type="text_en" indexed="true" stored="false" multiValued="true" />
+    <field name="concept_mapped_name_fr" type="text_fr" indexed="true" stored="false" multiValued="true" />
+    <field name="concept_mapped_name_fr_en" type="text_fr_en" indexed="true" stored="false" multiValued="true" />
     <field name="m_language_id" type="text_general" indexed="true" stored="true" multiValued="false"/>
     <field name="is_mapped" type="text_general" indexed="true" stored="true" multiValued="false"/>
     <field name="value_avg" type="pdouble" indexed="true" stored="true" multiValued="false"/>
@@ -353,6 +353,7 @@
     <fieldType name="text_en" class="solr.TextField" positionIncrementGap="100">
       <analyzer type="index">
         <tokenizer class="solr.StandardTokenizerFactory"/>
+	<filter class="solr.PatternReplaceFilterFactory" pattern="\p{Punct}" replacement=" " replace="all"/>
         <!-- Case insensitive stop word removal.
         <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="false"/>
         <filter class="solr.FlattenGraphFilterFactory"/>
@@ -374,6 +375,7 @@
       </analyzer>
       <analyzer type="query">
         <tokenizer class="solr.StandardTokenizerFactory"/>
+	<filter class="solr.PatternReplaceFilterFactory" pattern="\p{Punct}" replacement=" " replace="all"/>
         <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
         <filter class="solr.StopFilterFactory"
                 ignoreCase="true"
@@ -729,7 +731,7 @@
       <analyzer type="index">
   	<tokenizer class="solr.StandardTokenizerFactory"/>
 
-  	<filter class="solr.PatternReplaceFilterFactory" pattern="_" replacement=" " replace="all"/>
+	<filter class="solr.PatternReplaceFilterFactory" pattern="\p{Punct}" replacement=" " replace="all"/>
   	<filter class="solr.ICUFoldingFilterFactory"/>
         <!-- removes l', etc -->
         <filter class="solr.ElisionFilterFactory" ignoreCase="true" articles="lang/contractions_fr.txt"/>
@@ -742,7 +744,7 @@
       <analyzer type="query">
   	<tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms-fr.txt" ignoreCase="true" expand="true"/>
-  	<filter class="solr.PatternReplaceFilterFactory" pattern="_" replacement=" " replace="all"/>
+	<filter class="solr.PatternReplaceFilterFactory" pattern="\p{Punct}" replacement=" " replace="all"/>
   	<filter class="solr.ICUFoldingFilterFactory"/>
         <!-- removes l', etc -->
         <filter class="solr.ElisionFilterFactory" ignoreCase="true" articles="lang/contractions_fr.txt"/>
@@ -757,7 +759,7 @@
     <fieldType name="text_fr_en" class="solr.TextField" positionIncrementGap="100">
       <analyzer type="index">
   	<tokenizer class="solr.StandardTokenizerFactory"/>
-  	<filter class="solr.PatternReplaceFilterFactory" pattern="_" replacement=" " replace="all"/>
+	<filter class="solr.PatternReplaceFilterFactory" pattern="\p{Punct}" replacement=" " replace="all"/>
   	<filter class="solr.ICUFoldingFilterFactory"/>
         <!-- removes l', etc -->
         <filter class="solr.ElisionFilterFactory" ignoreCase="true" articles="lang/contractions_fr.txt"/>
@@ -770,7 +772,7 @@
       <analyzer type="query">
   	<tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms-fr-en.txt" ignoreCase="true" expand="true"/>
-  	<filter class="solr.PatternReplaceFilterFactory" pattern="_" replacement=" " replace="all"/>
+	<filter class="solr.PatternReplaceFilterFactory" pattern="\p{Punct}" replacement=" " replace="all"/>
   	<filter class="solr.ICUFoldingFilterFactory"/>
         <!-- removes l', etc -->
         <filter class="solr.ElisionFilterFactory" ignoreCase="true" articles="lang/contractions_fr.txt"/>
