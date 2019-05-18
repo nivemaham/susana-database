@@ -117,11 +117,11 @@ SELECT
 , case when c.standard_concept = 'S' THEN c.domain_id ELSE coalesce(cs.domain_id, 'Metadata') END domain_id_s    
 , c.vocabulary_id vocabulary_id_l
 , case when c.standard_concept = 'S' THEN c.vocabulary_id ELSE coalesce(cs.vocabulary_id, 'None') END vocabulary_id_s    
-, vote_count
+, coalesce(vote_count, 0) as vote_count
 , vote_value
 FROM concept c
 LEFT JOIN cr on c.concept_id = cr.concept_id_1
-LEFT JOIN concept cs on cr.concept_id_2 = cs.concept_id
+LEFT JOIN concept cs on cr.concept_id_2 = cs.concept_id and cs.standard_concept = 'S'
 LEFT JOIN vote on vote.m_concept_relationship_id = cr.m_concept_relationship_id
 WHERE TRUE 
 AND c.m_project_id IN ( 
