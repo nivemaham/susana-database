@@ -67,12 +67,12 @@ pg.inputBulk(query=f"""
   , m_project_id
   , invalid_reason 
   from concept
-  """,  numPartitions=4, partitionColumn="concept_id").registerTempTable("concept")
+  """,  isMultiline=true, numPartitions=4, partitionColumn="concept_id").registerTempTable("concept")
 
 pg.inputBulk(query=f"""
   select 
      m_project_id           
-   , m_project_type_id      
+    , m_project_type_id
   from mapper_project
   """,  numPartitions=4, partitionColumn="m_project_id").registerTempTable("project")
 
@@ -184,11 +184,11 @@ val resultDF = spark.sql("""
    , CASE WHEN m_language_id IS NULL THEN COALESCE(concept_name, 'EMPTY') ELSE null END  as concept_name_en
    , CASE WHEN m_language_id = 'FR'  THEN COALESCE(concept_name, 'EMPTY') ELSE null END  as concept_name_fr
    , CASE WHEN m_language_id = 'FR'  THEN COALESCE(concept_name, 'EMPTY') ELSE null END  as concept_name_fr_en
-   , COALESCE(domain_id, 'EMPTY')           as domain_id
-   , COALESCE(vocabulary_id, 'EMPTY')       as vocabulary_id
-   , COALESCE(concept_class_id, 'EMPTY')    as concept_class_id
-   , COALESCE(standard_concept, 'EMPTY')    as standard_concept
-   , COALESCE(invalid_reason, 'EMPTY')      as invalid_reason
+   , COALESCE(m_project_type_id, 'OMOP') || ' ' || COALESCE(domain_id, 'EMPTY')           as domain_id
+   , COALESCE(m_project_type_id, 'OMOP') || ' ' || COALESCE(vocabulary_id, 'EMPTY')       as vocabulary_id
+   , COALESCE(m_project_type_id, 'OMOP') || ' ' || COALESCE(concept_class_id, 'EMPTY')    as concept_class_id
+   , COALESCE(m_project_type_id, 'OMOP') || ' ' || COALESCE(standard_concept, 'EMPTY')    as standard_concept
+   , COALESCE(m_project_type_id, 'OMOP') || ' ' || COALESCE(invalid_reason, 'EMPTY')      as invalid_reason
    , COALESCE(concept_code, 'EMPTY')        as concept_code
    , concept_synonym_name_en
    , concept_synonym_name_fr
@@ -196,9 +196,9 @@ val resultDF = spark.sql("""
    , concept_mapped_name_en
    , concept_mapped_name_fr
    , concept_mapped_name_fr as concept_mapped_name_fr_en
-   , COALESCE(m_language_id, 'EN')       as m_language_id
+   , COALESCE(m_project_type_id, 'OMOP') || ' ' || COALESCE(m_language_id, 'EN')       as m_language_id
    , m_frequency_value   as frequency
-   , CASE 
+   , COALESCE(m_project_type_id, 'OMOP') || ' ' || CASE 
        WHEN standard_concept_mapped_name IS NOT NULL THEN 'S' 
        WHEN non_standard_concept_mapped_name IS NOT NULL THEN 'NS' 
        WHEN concept_relation_name IS NOT NULL THEN 'R' 
@@ -207,7 +207,7 @@ val resultDF = spark.sql("""
    , COALESCE(local_map_number, 0) as local_map_number
    , m_value_avg as value_avg
    , m_value_avg is not null value_is_numeric
-   , m_project_type_id
+   , COALESCE(m_project_type_id, 'OMOP') as  m_project_type_id
    FROM concept
    LEFT JOIN mappeddf USING (concept_id)
    LEFT JOIN dfsynen USING (concept_id)
@@ -226,5 +226,5 @@ val resultDF = spark.sql("""
 //
 
 
-val options = Map( "collection" -> "omop-concept", "zkhost" -> "localhost:9983")
+val options = Map( "collection" -> "omop-mapper", "zkhost" -> "localhost:9983")
   resultDF.repartition(32).write.format("solr").options(options).option("commit_within", "20000").option("batch_size", "20000").mode(org.apache.spark.sql.SaveMode.Overwrite).save
