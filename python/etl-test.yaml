@@ -1,0 +1,9 @@
+name: omop-solr
+url: http://localhost:8998
+kind: spark
+jars: ["/opt/lib/postgresql-42.2.5.jar", "/opt/lib/spark-solr-3.7.0-SNAPSHOT-shaded.jar", "/opt/lib/spark-postgres-2.4.0-SNAPSHOT-shaded.jar"]
+driver_memory: 1G
+executor_memory: 1G
+code:
+      init: spark/etl-test.scala
+      job: runJob
